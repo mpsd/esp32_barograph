@@ -9,11 +9,17 @@
 #define UBOUND(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
-#define ALTITUDE_FILE "/config/altitude"
-#define ALTITUDE_STD 540.0F
-extern float_t altitude;
+/**************************(Declare global Variables)****************************/
+struct config_param {
+  float_t Altitude = 540.0F;
+  uint64_t DataUpdateInterval = 60ULL;
+  uint64_t DisplayUpdateInterval = 300ULL;
 
-#define DB_FILE "/sd/tables.sqlite3"
+  uint32_t SDSpeed = 27000000U;
+  const char* AltitudeFile = "/config/altitude";
+  const char* SQLiteFile = "/sd/tables.sqlite3";
+};
+extern config_param CONFIG;
 
 struct db_hourly_value {
   float_t temperature;

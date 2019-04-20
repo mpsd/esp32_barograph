@@ -10,7 +10,6 @@
 #include <SD.h>
 
 #define SQLBUFFSIZE 450
-#define SDSPEED 27000000
 
 // Use HSPI for SD Card with custom pin assignment
 #define _sd_cs 15
@@ -18,7 +17,8 @@
 #define _sd_mosi 26
 #define _sd_miso 27
 
-void altitude_fetch(void);
+
+void config_get(void);
 
 void db_initialize(void);
 void db_close(void);

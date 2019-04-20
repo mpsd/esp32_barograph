@@ -35,9 +35,9 @@ float_t bme280_getPressureRaw() {
 
 float_t bme280_getPressure() {
     // https://de.wikipedia.org/wiki/Barometrische_H%C3%B6henformel#Reduktion_auf_Meeresh%C3%B6he
-    return (bme.readPressure()/100.0F)*pow(((bme.readTemperature() + 273.15F)/(bme.readTemperature() + 273.15F + 0.0065F * altitude)),-5.255);
+    return (bme.readPressure()/100.0F)*pow(((bme.readTemperature() + 273.15F)/(bme.readTemperature() + 273.15F + 0.0065F * CONFIG.Altitude)),-5.255);
 }
 
 float_t bme280_getAltitude() {
-  return altitude;
+  return CONFIG.Altitude;
 }

@@ -4,32 +4,30 @@
 SPIClass _spiSD(HSPI);
 sqlite3 *dbconn;
 
-const char* db_file=DB_FILE;
-
 db_hourly_value db_hourly_values[HOURLY_VALUES];
 db_pressure_graph_value db_pressure_graph_values[GRAPH_VALUES];
 
-float_t altitude = ALTITUDE_STD;
-
-void altitude_fetch() {
-  DEBUG_PRINT("Read Altitude from SD Card");
+void config_get() {
+  
   // SD on HSPI Port
   // github.com/espressif/arduino-esp32/issues/1219
   _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
 
-  if ( !SD.begin( _sd_cs, _spiSD, SDSPEED) ) {
+  if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
     DEBUG_PRINT("Card Mount Failed");
     return;
   }
 
-  File altfile = SD.open(ALTITUDE_FILE);
+  DEBUG_PRINT("Read Altitude from SD Card");
+
+  File altfile = SD.open(CONFIG.AltitudeFile);
   String buffer;
 
   if (!altfile) {
     DEBUG_PRINT("Altitude config file not found");
   }
   else {
-    altitude = altfile.readStringUntil('\n').toFloat();
+    CONFIG.Altitude = altfile.readStringUntil('\n').toFloat();
     DEBUG_PRINT("altitude defined");
   }
   altfile.close();
@@ -42,7 +40,7 @@ void db_initialize() {
   // github.com/espressif/arduino-esp32/issues/1219
   _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
 
-  if ( !SD.begin( _sd_cs, _spiSD, SDSPEED) ) {
+  if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
     DEBUG_PRINT("Card Mount Failed");
     return;
   }
@@ -51,7 +49,7 @@ void db_initialize() {
   sqlite3_initialize();
 
   DEBUG_PRINT("open DBfile");  
-  if ( sqlite3_open(db_file, &dbconn) ) {
+  if ( sqlite3_open(CONFIG.SQLiteFile, &dbconn) ) {
     DEBUG_PRINT("Unable to open database file");
     return;
   }

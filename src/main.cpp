@@ -1,14 +1,6 @@
 #include <Arduino.h>
-/*******************************************************************************************
- *******************************************************************************************
- **                                www.bastelgarage.ch                                    **
- ** Der Onlineshop mit Videoanleitungen und kompletten Bausätzen für Anfänger und Profis! **
- **                                                                                       **
- ** Verwendete Library:                                                                   **
- ** E-Ink Display Waveshare 200x200 1.54" GxEPD: https://github.com/ZinggJM/GxEPD2         **
- ** BME280: https://github.com/e-radionicacom/BME280-Arduino-Library                      **
- **                                                                                       **
- *******************************************************************************************
+/*
+
   Pinbelegung:
   Display:      ESP32 Devkitv1 / vSPI Interface:
   BUSY          D4: 4
@@ -49,20 +41,18 @@
 #include <WiFi.h>
 // used to switch WIFI and BT off
 
-/************************( Importieren der genutzten Bibliotheken )************************/
 
 /**************************(Definieren der genutzten Variabeln)****************************/
+
+config_param CONFIG;
+
+
+
+
+
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
-#define DISPLAYUPDATE 240
 uint64_t lastDisplayUpdate = 946684800ULL;
-
-#define DATAUPDATE 60
 uint64_t lastDataUpdate = 946684800ULL;
-
-
-/**************************( Eigene Funktionen )******************************************/
-
-/**************************( DB Funktionen )*****************************************************/
 
 
 /*****************************************( Setup )****************************************/
@@ -70,7 +60,8 @@ void setup(void)
 {
   Serial.begin(115200);
   DEBUG_PRINT("****( begin )****");
-  /* comment out if program space is running low (take ~40% of PROGRAM) */
+
+  /* comment out if program space is running low (takes ~40% of PROGRAM) */
   DEBUG_PRINT("disable WIFI and BT");
   // github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/examples/WiFiBlueToothSwitch/WiFiBlueToothSwitch.ino
   WiFi.mode(WIFI_OFF);
@@ -81,7 +72,9 @@ void setup(void)
 
   // RtcDateTime now = RtcDateTime(__DATE__,__TIME__);
   // ds3231_setDateTime( now );
-  altitude_fetch();
+  
+  DEBUG_PRINT("load config from file");
+  config_get();
 
   DEBUG_PRINT("initialize DB");
   db_fetchData();
@@ -108,13 +101,13 @@ void loop()
     ds3231_setDateTime( lastDataUpdate );
   }
   
-  if ( ds3231_getEpoch() - DATAUPDATE >= lastDataUpdate ) {
+  if ( ds3231_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
     db_pushData(bme280_getTemperature(), bme280_getHumidity(), bme280_getPressure(), bme280_getAltitude(), bme280_getPressureRaw(),  ds3231_getEpoch() );
     lastDataUpdate = ds3231_getEpoch();
   }
 
-  if (( ds3231_Minute() %5 == 0) && (ds3231_getEpoch() - DISPLAYUPDATE >= lastDisplayUpdate )) {
+  if (( ds3231_Minute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
     DEBUG_PRINT("Update display");
     lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
     db_fetchData();
