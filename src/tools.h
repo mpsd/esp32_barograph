@@ -9,6 +9,60 @@
 #define UBOUND(a) (sizeof(a) / sizeof(a[0]))
 #endif
 
+/*
+
+  Pinbelegung:
+  Display:      ESP32 Devkitv1 / vSPI Interface:
+  BUSY          D4: 4
+  RST           RX2: 16
+  DC            TX2: 17
+  CS            D5: 5   (SS)
+  CLK           D18: 18 (SCK)
+  DIN           D23: 23 (MOSI)
+  GND           GND
+  3.3V          3V3
+
+  SD MMC:       ESP32 Devkitv1 / HSPI Interface with custom pin assignment to avoid GPIO12 voltage selection:
+  CS            15 (SS)
+  CLK           14 (SCK)
+  DIN           26 (MOSI)
+  DOUT          27 (MISO)
+
+  BME280:       ESP32 Devkitv1 / I2C 0x76:
+  VCC           3V
+  GND           GND
+  SCL           D22: 22 (I2C SCL)
+  SDA           D21: 21 (I2C SDA)
+
+  DS3231 RTC:   ESP32 Devkitv1 / I2C:
+  VCC           3V
+  GND           GND
+  SCL           D22: 22 (I2C SCL)
+  SDA           D21: 21 (I2C SDA)
+
+  uBlox Neo6    ESP32 Devkit1 / UART:
+  VCC           3V
+  GND           GND
+  RX            D1: TX
+  TX            D3: RX
+*/
+
+// Use HSPI for SD Card with custom pin assignment
+#define _sd_cs 15
+#define _sd_clk 14
+#define _sd_mosi 26
+#define _sd_miso 27
+
+#define _epd_busy 4
+#define _epd_rst 16
+#define _epd_dc 17
+#define _epd_spi_cs 5
+#define _epd_spi_clk 18
+#define _epd_spi_mosi 23
+
+#define _gps_tx 1 
+#define _gps_rx 3
+
 /**************************(Declare global Variables)****************************/
 struct config_param {
   float_t Altitude = 540.0F;
@@ -16,6 +70,7 @@ struct config_param {
   uint64_t DisplayUpdateInterval = 300ULL;
 
   uint32_t SDSpeed = 27000000U;
+  int32_t GPSBaud = 9600;
   const char* AltitudeFile = "/config/altitude";
   const char* SQLiteFile = "/sd/tables.sqlite3";
 };

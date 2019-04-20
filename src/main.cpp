@@ -1,42 +1,10 @@
 #include <Arduino.h>
-/*
-
-  Pinbelegung:
-  Display:      ESP32 Devkitv1 / vSPI Interface:
-  BUSY          D4: 4
-  RST           RX2: 16
-  DC            TX2: 17
-  CS            D5: 5   (SS)
-  CLK           D18: 18 (SCK)
-  DIN           D23: 23 (MOSI)
-  GND           GND
-  3.3V          3V3
-
-  SD MMC:       ESP32 Devkitv1 / HSPI Interface with custom pin assignment to avoid GPIO12 voltage selection:
-  CS            15 (SS)
-  CLK           14 (SCK)
-  DIN           26 (MOSI)
-  DOUT          27 (MISO)
-
-  BME280:       ESP32 Devkitv1 / I2C 0x76:
-  VCC           3V
-  GND           GND
-  SCL           D22: 22 (I2C SCL)
-  SDA           D21: 21 (I2C SDA)
-
-  DS3231 RTC:   ESP32 Devkitv1 / I2C:
-  VCC           3V
-  GND           GND
-  SCL           D22: 22 (I2C SCL)
-  SDA           D21: 21 (I2C SDA)
-
-*/
-
 #include "tools.h"
 #include "display.h"
 #include "database.h"
 #include "bme280.h"
 #include "ds3231.h"
+#include "gps.h"
 
 #include <WiFi.h>
 // used to switch WIFI and BT off
@@ -45,9 +13,6 @@
 /**************************(Definieren der genutzten Variabeln)****************************/
 
 config_param CONFIG;
-
-
-
 
 
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
@@ -84,7 +49,10 @@ void setup(void)
   
   DEBUG_PRINT("initialize ePaper");
   display_update();
- 
+
+  DEBUG_PRINT("initialize GPS");
+  gps_initialize();
+
   DEBUG_PRINT("****( complete )****");
 
 }
@@ -96,11 +64,6 @@ void loop()
     DEBUG_PRINT("RTC lost confidence in the DateTime!");
   }
 
-  if ( ds3231_getEpoch() < lastDataUpdate ) {
-    DEBUG_PRINT("Set Time to lastDataUpdate");
-    ds3231_setDateTime( lastDataUpdate );
-  }
-  
   if ( ds3231_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
     db_pushData(bme280_getTemperature(), bme280_getHumidity(), bme280_getPressure(), bme280_getAltitude(), bme280_getPressureRaw(),  ds3231_getEpoch() );
@@ -114,5 +77,5 @@ void loop()
     display_update();
   }
 
-  delay(500);
+  gps_delay(1000);
 }

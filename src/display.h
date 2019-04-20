@@ -5,21 +5,6 @@
 
 #include <GxEPD2.h>
 
-// Genutztes Display 200x200 1.54inch Schwarz / Weiss E-Ink Display
-/*  BUSY          D4: 4
-  RST           RX2: 16
-  DC            TX2: 17
-  CS            D5: 5   (SS)
-  CLK           D18: 18 (SCK)
-  DIN           D23: 23 (MOSI)
-*/
-#define _epd_busy 4
-#define _epd_rst 16
-#define _epd_dc 17
-#define _epd_spi_cs 5
-#define _epd_spi_clk 18
-#define _epd_spi_mosi 23
-
 #define ENABLE_GxEPD2_GFX 0
 // mapping suggestion for ESP32, e.g. LOLIN32, see .../variants/.../pins_arduino.h for your board
 // NOTE: there are variants with different pins for SPI ! CHECK SPI PINS OF YOUR BOARD

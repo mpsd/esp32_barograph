@@ -11,13 +11,6 @@
 
 #define SQLBUFFSIZE 450
 
-// Use HSPI for SD Card with custom pin assignment
-#define _sd_cs 15
-#define _sd_clk 14
-#define _sd_mosi 26
-#define _sd_miso 27
-
-
 void config_get(void);
 
 void db_initialize(void);
