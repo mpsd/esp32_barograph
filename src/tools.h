@@ -43,8 +43,8 @@
   uBlox Neo6    ESP32 Devkit1 / UART:
   VCC           3V
   GND           GND
-  RX            D1: TX
-  TX            D3: RX
+  RX            D34: TX
+  TX            D35: RX
 */
 
 // Use HSPI for SD Card with custom pin assignment
@@ -60,8 +60,8 @@
 #define _epd_spi_clk 18
 #define _epd_spi_mosi 23
 
-#define _gps_tx 1 
-#define _gps_rx 3
+#define _gps_tx 34
+#define _gps_rx 35
 
 /**************************(Declare global Variables)****************************/
 struct config_param {

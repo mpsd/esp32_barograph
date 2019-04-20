@@ -4,7 +4,6 @@
 #include "tools.h"
 
 #include <TinyGPS++.h>
-#include <SoftwareSerial.h>
 
 #define DEBUG_PRINT_GPS Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - Sat: %02u, Lat: %03.2f, Lon: %03.2f, Alt: %4.0f, Course: %3.0f, Speed: %3.0f", \
     gps_getDayOfMonth(),\

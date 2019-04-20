@@ -2,23 +2,26 @@
 #include "gps.h"
 
 TinyGPSPlus gps;
-
-SoftwareSerial ss( _gps_rx, _gps_tx );
+HardwareSerial _UARTGPS(1);
 
 void gps_initialize() {
-    ss.begin( CONFIG.GPSBaud );
+    _UARTGPS.begin( CONFIG.GPSBaud, SERIAL_8N1, _gps_rx, _gps_tx);
+    while ( ! _UARTGPS.available() ) {
+        DEBUG_PRINT("GPS not found");
+        delay(1000);
+    }
 }
 
 void gps_delay( unsigned long ms ) {
     unsigned long start = millis();
     do 
     {
-        while ( ss.available() )
-            gps.encode( ss.read() );
+        while ( _UARTGPS.available() ) {
+            gps.encode( _UARTGPS.read() );
+        }
     } while (millis() - start < ms);
  
     DEBUG_PRINT_GPS;
-
 }
 
 bool gps_LocationIsValid() {

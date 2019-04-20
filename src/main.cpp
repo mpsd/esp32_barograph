@@ -14,10 +14,10 @@
 
 config_param CONFIG;
 
-
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
 uint64_t lastDisplayUpdate = 946684800ULL;
 uint64_t lastDataUpdate = 946684800ULL;
+
 
 
 /*****************************************( Setup )****************************************/
@@ -52,7 +52,7 @@ void setup(void)
 
   DEBUG_PRINT("initialize GPS");
   gps_initialize();
-
+  
   DEBUG_PRINT("****( complete )****");
 
 }
