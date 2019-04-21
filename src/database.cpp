@@ -104,8 +104,9 @@ void db_fetchData() {
   }
   sqlite3_finalize(res1);
 
-
   DEBUG_PRINT("Retrieve data for graph (200px)");
+
+/*too slow
 
   sprintf(sqlbuffer, "SELECT id, (%ld + timestampoffset) as lookup_timestamp FROM t_24h_200px ORDER BY id ASC;", current_timestamp);
   DEBUG_PRINT(sqlbuffer);
@@ -148,7 +149,8 @@ void db_fetchData() {
   }
   sqlite3_finalize(res2);
   sqlite3_finalize(res1);
-  
+*/  
+
   for (int i=0; i < UBOUND(db_hourly_values); i++) {
     sprintf(sqlbuffer, 
         "SELECT temperature, humidity, pressure, timestamp FROM t_bme280_values WHERE abs(%ld - timestamp) < 300 ORDER BY abs(%ld - timestamp) ASC LIMIT 1;",
@@ -174,7 +176,7 @@ void db_fetchData() {
     }
     sqlite3_finalize(res1);
   }
-  
+
   DEBUG_PRINT("Calculate pressure changes");
 
   if (db_hourly_values[1].pressure > 0 ) { db_hourly_values[0].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[1].pressure; }

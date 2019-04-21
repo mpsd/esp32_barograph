@@ -2,7 +2,7 @@
 #include "gps.h"
 
 TinyGPSPlus gps;
-HardwareSerial _UARTGPS(1);
+HardwareSerial _UARTGPS(1); // 1 is used internally, however pins are set in ...begin()
 
 void gps_initialize() {
     _UARTGPS.begin( CONFIG.GPSBaud, SERIAL_8N1, _gps_rx, _gps_tx);
@@ -110,4 +110,21 @@ uint8_t gps_getMinute() {
 
 uint8_t gps_getSecond() {
     return gps.time.second();
+}
+
+uint64_t gps_getEpoch() {
+    struct tm * now;
+    time_t rawtime;
+
+    time( &rawtime );
+    now = localtime( &rawtime );
+
+    now->tm_year = gps_getYear() - 1900;
+    now->tm_mon = gps_getMonth() - 1;
+    now->tm_mday = gps_getDayOfMonth();
+    now->tm_hour = gps_getHour();
+    now->tm_min = gps_getMinute();
+    now->tm_sec = gps_getSecond();
+
+    return (uint64_t)mktime( now );
 }
