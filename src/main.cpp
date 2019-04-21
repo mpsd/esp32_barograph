@@ -56,7 +56,19 @@ void loop()
   
   if ( gps_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
-    db_pushData(bme280_getTemperature(), bme280_getHumidity(), bme280_getPressure(), bme280_getAltitude(), bme280_getPressureRaw(),  gps_getEpoch() );
+    db_pushData( gps_getLat(),
+        gps_getLon(),
+        gps_getAltitude(),
+        gps_getCourse(),
+        gps_getSpeed(),
+        gps_getSatellites(),
+        gps_getHDOP(),
+        bme280_getTemperature(),
+        bme280_getHumidity(),
+        bme280_getPressureRaw(),
+        bme280_getPressure(),
+        bme280_getAltitude(),
+        gps_getEpoch() );
     lastDataUpdate = gps_getEpoch();
   }
 

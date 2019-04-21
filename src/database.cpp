@@ -62,7 +62,8 @@ void db_initialize() {
 
   DEBUG_PRINT("open DBfile");  
   if ( sqlite3_open(CONFIG.SQLiteFile, &dbconn) ) {
-    DEBUG_PRINT("Unable to open database file");
+    DEBUG_PRINT("Unable to open database file - ");
+    DEBUG_PRINT(CONFIG.SQLiteFile);
     return;
   }
 }
@@ -101,7 +102,7 @@ void db_fetchData() {
     db_pressure_graph_values[i].timestamp = 0;
   }
 
-  sprintf(sqlbuffer, "SELECT max(timestamp) FROM t_bme280_values;");
+  sprintf(sqlbuffer, "SELECT max(gmtimestamp) FROM t_datalog;");
   DEBUG_PRINT(sqlbuffer);
   
   error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
@@ -109,6 +110,7 @@ void db_fetchData() {
     DEBUG_PRINT("No data found");
     DEBUG_PRINT(sqlite3_errstr(error));
     sqlite3_finalize(res1);
+    db_close();
     return;
   }
   while (sqlite3_step(res1) == SQLITE_ROW) {
@@ -117,56 +119,7 @@ void db_fetchData() {
   sqlite3_finalize(res1);
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-
-/*too slow
-
-  sprintf(sqlbuffer, "SELECT id, (%ld + timestampoffset) as lookup_timestamp FROM t_24h_200px ORDER BY id ASC;", current_timestamp);
-  DEBUG_PRINT(sqlbuffer);
-
-  error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
-  if ( error != SQLITE_OK ) {
-    DEBUG_PRINT("No data found");
-    DEBUG_PRINT(sqlite3_errstr(error));
-    sqlite3_finalize(res1);
-    return;
-  }
-
-  sprintf(sqlbuffer, "SELECT timestamp, pressure FROM t_bme280_values WHERE abs(?1 - timestamp) < 300 ORDER BY abs(?1 - timestamp) ASC LIMIT 1;");
-  DEBUG_PRINT(sqlbuffer);
-
-  error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res2, NULL);
-  if ( error != SQLITE_OK ) {
-    DEBUG_PRINT(sqlite3_errstr(error));
-    DEBUG_PRINT(sqlite3_errmsg(dbconn));
-  }
-
-  
-  while (sqlite3_step(res1) == SQLITE_ROW) {
-    id = sqlite3_column_int(res1, 0);
-
-    error = sqlite3_bind_int(res2, 1, sqlite3_column_int(res1, 1));
-    if ( error != SQLITE_OK ) {
-      DEBUG_PRINT(sqlite3_errstr(error));
-      DEBUG_PRINT(sqlite3_errmsg(dbconn));
-    }
-
-    db_pressure_graph_values[ id ].x = id; 
-    
-    while (sqlite3_step(res2) == SQLITE_ROW) {
-      DEBUG_PRINT( sqlite3_column_text(res1, 0) );
-      db_pressure_graph_values[ id ].timestamp = sqlite3_column_int(res2, 0); 
-      db_pressure_graph_values[ id ].pressure  = sqlite3_column_double(res2, 1);
-    }
-    sqlite3_clear_bindings(res2);
-    sqlite3_reset(res2);
-  }
-  sqlite3_finalize(res2);
-  sqlite3_finalize(res1);
-*/  
-
-  /* --------------- Alternative Beginn ----------------*/
-  
-  sprintf(sqlbuffer, "SELECT timestamp, pressure, (%ld - timestamp) as timestampoffset FROM t_bme280_values WHERE timestamp >= (%ld - (24*3600)) ORDER BY timestamp DESC;",
+  sprintf(sqlbuffer, "SELECT gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - (24*3600)) ORDER BY gmtimestamp DESC;",
       current_timestamp,
       current_timestamp);
   DEBUG_PRINT(sqlbuffer);
@@ -187,11 +140,11 @@ void db_fetchData() {
   }
   sqlite3_finalize(res1);
 
-  /* --------------- Alternative Ende ------------------*/
 
+  DEBUG_PRINT("Retrieve hourly data");
   for (int i=0; i < UBOUND(db_hourly_values); i++) {
     sprintf(sqlbuffer, 
-        "SELECT temperature, humidity, pressure, timestamp FROM t_bme280_values WHERE abs(%ld - timestamp) < 300 ORDER BY abs(%ld - timestamp) ASC LIMIT 1;",
+        "SELECT temperature, humidity, pressure, gmtimestamp FROM t_datalog WHERE abs(%ld - gmtimestamp) < 300 ORDER BY abs(%ld - gmtimestamp) ASC LIMIT 1;",
         current_timestamp - (i * 3600),
         current_timestamp - (i * 3600));
     DEBUG_PRINT(sqlbuffer);
@@ -202,10 +155,10 @@ void db_fetchData() {
       DEBUG_PRINT("No data found");
       DEBUG_PRINT(sqlite3_errstr(error));
       sqlite3_finalize(res1);
+      db_close();
       return;
     }
 
-    DEBUG_PRINT("Retrieve data");
     while (sqlite3_step(res1) == SQLITE_ROW) {
       db_hourly_values[i].temperature = sqlite3_column_double(res1, 0);
       db_hourly_values[i].humidity    = sqlite3_column_double(res1, 1);
@@ -225,14 +178,16 @@ void db_fetchData() {
   DEBUG_PRINT("****( complete )****");
 }
 
-void db_pushData(float_t temp = 0, float_t hum = 0, float_t press = 0,  float_t alt = 0, float_t press_raw = 0, uint64_t tst = 0) {
+void db_pushData(float_t lat = 0, float_t lon = 0, float_t alt_m = 0, float_t crs = 0, float_t spd = 0, uint32_t sat = 0, float_t hdop = 0, float_t temp = 0, float_t hum = 0, float_t press_raw = 0, float_t press = 0,  float_t alt = 0, uint64_t tst = 0) {
   DEBUG_PRINT("****( begin )****");
   db_initialize();
 
   int error = 0;
   char sqlbuffer[SQLBUFFSIZE];
   
-  sprintf(sqlbuffer, "INSERT INTO t_bme280_values(temperature, humidity, pressure, altitude, pressure_raw, timestamp) VALUES(%0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);", temp, hum, press, alt, press_raw, tst);
+  sprintf(sqlbuffer, 
+    "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
+    lat, lon, alt_m, crs, spd, sat, hdop, temp, hum, press_raw, press, alt, tst);
   DEBUG_PRINT(sqlbuffer);
 
   error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
