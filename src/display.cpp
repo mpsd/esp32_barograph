@@ -73,9 +73,9 @@ void display_update(void)
     display.printf("6h:%4.0fhPa %3.1f", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
     
     display.setCursor( (display.width() - 5*tbw)/2, tbh );
-    display.printf("%5.2fC", gps_getLat());
+    display.printf("%5.2f", gps_getLat());
     display.setCursor( (display.width() - 5*tbw)/2, 2*tbh );
-    display.printf("%5.2fC", gps_getLon());
+    display.printf("%5.2f", gps_getLon());
     
     display.setCursor( (display.width() - 3*tbw), tbh );
     display.printf("%2.0fC", db_hourly_values[0].temperature);
