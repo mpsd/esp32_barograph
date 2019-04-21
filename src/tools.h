@@ -59,13 +59,18 @@
 
 /**************************(Declare global Variables)****************************/
 struct config_param {
-  float_t Altitude = 540.0F;
-  uint64_t DataUpdateInterval = 60ULL;
-  uint64_t DisplayUpdateInterval = 300ULL;
+  float_t   Altitude = 540.0F;
+  int32_t   TZOffset = 7200 ;
+
+  const char* AltitudeFile = "/config/altitude";
+  const char* TZOffsetFile = "/config/tzoffset";
+
+  uint64_t  DataUpdateInterval = 60ULL;
+  uint64_t  DisplayUpdateInterval = 300ULL;
 
   uint32_t SDSpeed = 27000000U;
   int32_t GPSBaud = 9600;
-  const char* AltitudeFile = "/config/altitude";
+
   const char* SQLiteFile = "/sd/tables.sqlite3";
 };
 extern config_param CONFIG;

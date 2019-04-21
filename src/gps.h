@@ -5,7 +5,7 @@
 
 #include <TinyGPS++.h>
 
-#define DEBUG_PRINT_GPS Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - Sat: %02u, Lat: %08.6f, Lon: %08.6f, Alt: %4.0f, Course: %3.0f, Speed: %2.0f, Epoch: %llu\n", \
+#define DEBUG_PRINT_GPS Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - Sat: %02u, Lat: %08.6f, Lon: %08.6f, Alt: %4.0f, Course: %3.0f, Speed: %2.0f, GMEpoch: %llu\n", \
     gps_getDayOfMonth(),\
     gps_getMonth(),     \
     gps_getYear(),      \
@@ -43,5 +43,9 @@ uint8_t gps_getMinute();
 uint8_t gps_getSecond();
 
 uint64_t gps_getEpoch();
+
+/* private functions */
+tm * gps_getGMNow();
+tm * gps_getLocalNow();
 
 #endif

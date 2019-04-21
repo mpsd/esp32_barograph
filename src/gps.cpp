@@ -89,42 +89,53 @@ float_t gps_getSpeed() {
 }
 
 uint16_t gps_getYear() {
-    return gps.date.year();
+    return (uint16_t)gps_getLocalNow()->tm_year + 1900; // epoch style correction
 }
 
 uint8_t gps_getMonth() {
-    return gps.date.month();
+    return (uint8_t)gps_getLocalNow()->tm_mon + 1;      // tm_mon starts with 0
 }
 
 uint8_t gps_getDayOfMonth() {
-    return gps.date.day();
+    return (uint8_t)gps_getLocalNow()->tm_mday;
 }
 
 uint8_t gps_getHour() {
-    return gps.time.hour();
+    return (uint8_t)gps_getLocalNow()->tm_hour;
 }
 
 uint8_t gps_getMinute() {
-    return gps.time.minute();
+    return (uint8_t)gps_getLocalNow()->tm_min;
 }
 
 uint8_t gps_getSecond() {
-    return gps.time.second();
+    return (uint8_t)gps_getLocalNow()->tm_sec;
 }
 
 uint64_t gps_getEpoch() {
-    struct tm * now;
+    return (uint64_t)mktime( gps_getGMNow() );
+}
+
+
+/* private functions, epoch style tm structures (after 01/01/1900) */
+tm * gps_getGMNow() {
+    struct tm * gmnow;
     time_t rawtime;
 
     time( &rawtime );
-    now = localtime( &rawtime );
+    gmnow = gmtime( &rawtime );
 
-    now->tm_year = gps_getYear() - 1900;
-    now->tm_mon = gps_getMonth() - 1;
-    now->tm_mday = gps_getDayOfMonth();
-    now->tm_hour = gps_getHour();
-    now->tm_min = gps_getMinute();
-    now->tm_sec = gps_getSecond();
+    gmnow->tm_year =  gps.date.year() - 1900;
+    gmnow->tm_mon =   gps.date.month() - 1;
+    gmnow->tm_mday =  gps.date.day();
+    gmnow->tm_hour =  gps.time.hour();
+    gmnow->tm_min =   gps.time.minute();
+    gmnow->tm_sec =   gps.time.second();
 
-    return (uint64_t)mktime( now );
+    return gmnow;
+}
+
+tm * gps_getLocalNow() {
+    time_t rawtime = (time_t)gps_getEpoch() + (time_t)CONFIG.TZOffset;
+    return gmtime( &rawtime );
 }
