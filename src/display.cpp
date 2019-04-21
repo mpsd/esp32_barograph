@@ -62,9 +62,9 @@ void display_update(void)
   {
     display.fillScreen(GxEPD_WHITE);
     display.setCursor( 0, tbh );
-    display.printf("%2.0fC", db_hourly_values[0].temperature);
+    display.printf("%02u:%02u", gps_getHour(), gps_getMinute());
     display.setCursor( 0, 2*tbh );
-    display.printf("%2.0f%%", db_hourly_values[0].humidity);
+    display.printf("%02u/%02u", gps_getDayOfMonth(), gps_getMonth());
     display.setCursor( 0, 3*tbh + 3 );
     display.printf("0h:%4.0fhPa %3.1f", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure);
     display.setCursor( 0, 4*tbh + 3 );
@@ -72,10 +72,15 @@ void display_update(void)
     display.setCursor( 0, 5*tbh + 3 );
     display.printf("6h:%4.0fhPa %3.1f", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
     
-    display.setCursor( (display.width() - 5*tbw), tbh );
-    display.printf("%02u:%02u", gps_getHour(), gps_getMinute());
-    display.setCursor( (display.width() - 5*tbw), 2*tbh );
-    display.printf("%02u/%02u", gps_getDayOfMonth(), gps_getMonth());
+    display.setCursor( (display.width() - 5*tbw)/2, tbh );
+    display.printf("%5.2fC", gps_getLat());
+    display.setCursor( (display.width() - 5*tbw)/2, 2*tbh );
+    display.printf("%5.2fC", gps_getLon());
+    
+    display.setCursor( (display.width() - 3*tbw), tbh );
+    display.printf("%2.0fC", db_hourly_values[0].temperature);
+    display.setCursor( (display.width() - 3*tbw), 2*tbh );
+    display.printf("%2.0f%%", db_hourly_values[0].humidity);
 
     display_drawDottedLine( 0,  80, display.width(),  80, GxEPD_BLACK); // 1030
     display_drawDottedLine( 0, 100, display.width(), 100, GxEPD_BLACK); // 1020
@@ -93,8 +98,8 @@ void display_update(void)
     display.setCursor( 0, display.height()-2 );
     display.print("24h");
     display_drawDottedLine( display.width()/2, 80, display.width()/2, 180, GxEPD_BLACK); //  12h
-    display.setCursor( (display.width() - 3*tbw)/2, display.height()-2 );
-    display.print("12h");
+    display.setCursor( (display.width() - 5*tbw)/2, display.height()-2 );
+    display.printf("%4.0fm", CONFIG.Altitude);
     display_drawDottedLine( display.width()*3/4, 80, display.width()*3/4, 180, GxEPD_BLACK); //  6h
     display_drawDottedLine( display.width()*7/8, 80, display.width()*7/8, 180, GxEPD_BLACK); //  3h
     display.setCursor( (display.width() - 2*tbw), display.height()-2 );
