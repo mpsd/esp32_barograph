@@ -3,7 +3,6 @@
 #include "display.h"
 #include "database.h"
 #include "bme280.h"
-#include "ds3231.h"
 #include "gps.h"
 
 #include <WiFi.h>
@@ -32,12 +31,6 @@ void setup(void)
   WiFi.mode(WIFI_OFF);
   btStop();
 
-  DEBUG_PRINT("initialize DS3231 RTC");
-  ds3231_initialize();
-
-  // RtcDateTime now = RtcDateTime(__DATE__,__TIME__);
-  // ds3231_setDateTime( now );
-  
   DEBUG_PRINT("load config from file");
   config_get();
 
@@ -60,19 +53,16 @@ void setup(void)
 /*************************************(Hauptprogramm)**************************************/
 void loop()
 {
-  if ( !ds3231_IsValid() ) {
-    DEBUG_PRINT("RTC lost confidence in the DateTime!");
-  }
-
-  if ( ds3231_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
+  
+  if ( gps_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
-    db_pushData(bme280_getTemperature(), bme280_getHumidity(), bme280_getPressure(), bme280_getAltitude(), bme280_getPressureRaw(),  ds3231_getEpoch() );
-    lastDataUpdate = ds3231_getEpoch();
+    db_pushData(bme280_getTemperature(), bme280_getHumidity(), bme280_getPressure(), bme280_getAltitude(), bme280_getPressureRaw(),  gps_getEpoch() );
+    lastDataUpdate = gps_getEpoch();
   }
 
-  if (( ds3231_Minute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
+  if (( gps_getMinute() %5 == 0) && (gps_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
     DEBUG_PRINT("Update display");
-    lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
+    lastDisplayUpdate = gps_getEpoch(); // due to long running db fetch reset timer at the beginning
     db_fetchData();
     display_update();
   }

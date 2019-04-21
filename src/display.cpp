@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "display.h"
-#include "ds3231.h"
+#include "gps.h"
 
 SPIClass _spiDisplay(VSPI);
 GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS*/ _epd_spi_cs, /*DC*/ _epd_dc, /*RST*/ _epd_rst, /*BUSY*/ _epd_busy));
@@ -73,9 +73,9 @@ void display_update(void)
     display.printf("6h:%4.0fhPa %3.1f", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
     
     display.setCursor( (display.width() - 5*tbw), tbh );
-    display.printf("%02u:%02u", ds3231_Hour(), ds3231_Minute());
+    display.printf("%02u:%02u", gps_getHour(), gps_getMinute());
     display.setCursor( (display.width() - 5*tbw), 2*tbh );
-    display.printf("%02u/%02u", ds3231_DayOfMonth(), ds3231_Month());
+    display.printf("%02u/%02u", gps_getDayOfMonth(), gps_getMonth());
 
     display_drawDottedLine( 0,  80, display.width(),  80, GxEPD_BLACK); // 1030
     display_drawDottedLine( 0, 100, display.width(), 100, GxEPD_BLACK); // 1020

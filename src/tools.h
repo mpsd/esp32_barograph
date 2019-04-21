@@ -34,12 +34,6 @@
   SCL           D22: 22 (I2C SCL)
   SDA           D21: 21 (I2C SDA)
 
-  DS3231 RTC:   ESP32 Devkitv1 / I2C:
-  VCC           3V
-  GND           GND
-  SCL           D22: 22 (I2C SCL)
-  SDA           D21: 21 (I2C SDA)
-
   uBlox Neo6    ESP32 Devkit1 / UART:
   VCC           3V
   GND           GND

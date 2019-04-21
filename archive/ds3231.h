@@ -3,6 +3,14 @@
 
 #include "tools.h"
 
+/*
+  DS3231 RTC:   ESP32 Devkitv1 / I2C:
+  VCC           3V
+  GND           GND
+  SCL           D22: 22 (I2C SCL)
+  SDA           D21: 21 (I2C SDA)
+*/
+
 #include <RtcDS3231.h>
 // builtin libraries
 #include <Wire.h>
