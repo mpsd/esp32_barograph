@@ -19,18 +19,30 @@ void config_get() {
   }
 
   DEBUG_PRINT("Read Altitude from SD Card");
-
-  File altfile = SD.open(CONFIG.AltitudeFile);
+  File confile = SD.open(CONFIG.AltitudeFile);
   String buffer;
 
-  if (!altfile) {
+  if (!confile) {
     DEBUG_PRINT("Altitude config file not found");
   }
   else {
-    CONFIG.Altitude = altfile.readStringUntil('\n').toFloat();
-    DEBUG_PRINT("altitude defined");
+    CONFIG.Altitude = confile.readStringUntil('\n').toFloat();
+    DEBUG_PRINT("Altitude defined");
   }
-  altfile.close();
+  confile.close();
+
+  DEBUG_PRINT("Read Timezone Offset from SD Card");
+  confile = SD.open(CONFIG.TZOffsetFile);
+  
+  if (!confile) {
+    DEBUG_PRINT("Timezone config file not found");
+  }
+  else {
+    CONFIG.TZOffset = confile.readStringUntil('\n').toInt();
+    DEBUG_PRINT("TZOffset defined");
+  }
+  confile.close();
+
   _spiSD.end();
 }
 
@@ -67,7 +79,7 @@ void db_fetchData() {
 
   int error = 0;
   sqlite3_stmt *res1;
-  sqlite3_stmt *res2;
+  // sqlite3_stmt *res2;
   char sqlbuffer[SQLBUFFSIZE];
 
   time_t current_timestamp = 0;
@@ -127,6 +139,7 @@ void db_fetchData() {
     DEBUG_PRINT(sqlite3_errstr(error));
     DEBUG_PRINT(sqlite3_errmsg(dbconn));
   }
+
   
   while (sqlite3_step(res1) == SQLITE_ROW) {
     id = sqlite3_column_int(res1, 0);
@@ -150,6 +163,31 @@ void db_fetchData() {
   sqlite3_finalize(res2);
   sqlite3_finalize(res1);
 */  
+
+  /* --------------- Alternative Beginn ----------------*/
+  
+  sprintf(sqlbuffer, "SELECT timestamp, pressure, (%ld - timestamp) as timestampoffset FROM t_bme280_values WHERE timestamp >= (%ld - (24*3600)) ORDER BY timestamp DESC;",
+      current_timestamp,
+      current_timestamp);
+  DEBUG_PRINT(sqlbuffer);
+
+  error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
+  if ( error != SQLITE_OK ) {
+    DEBUG_PRINT( sqlite3_errstr(error) );
+    DEBUG_PRINT( sqlite3_errmsg(dbconn) );
+  }
+
+  while (sqlite3_step(res1) == SQLITE_ROW) {
+    id = floor(200-(sqlite3_column_int(res1, 2)*200/(24*3600)));
+    Serial.printf("id: %u, tst: %d, tstoffset: %d \n", id, sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 2));
+
+    db_pressure_graph_values[ id ].x = id;
+    db_pressure_graph_values[ id ].pressure = sqlite3_column_double(res1, 1);
+    db_pressure_graph_values[ id ].timestamp = sqlite3_column_int(res1, 0);
+  }
+  sqlite3_finalize(res1);
+
+  /* --------------- Alternative Ende ------------------*/
 
   for (int i=0; i < UBOUND(db_hourly_values); i++) {
     sprintf(sqlbuffer, 

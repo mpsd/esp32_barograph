@@ -60,7 +60,7 @@
 /**************************(Declare global Variables)****************************/
 struct config_param {
   float_t   Altitude = 540.0F;
-  int32_t   TZOffset = 7200 ;
+  int32_t   TZOffset = 2;
 
   const char* AltitudeFile = "/config/altitude";
   const char* TZOffsetFile = "/config/tzoffset";
