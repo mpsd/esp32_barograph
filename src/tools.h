@@ -65,6 +65,9 @@ struct config_param {
   const char* AltitudeFile = "/config/altitude";
   const char* TZOffsetFile = "/config/tzoffset";
 
+  const char* APSSID = "espDataLog";
+  const char* APPASS = "connect";
+
   uint64_t  DataUpdateInterval = 60ULL;
   uint64_t  DisplayUpdateInterval = 300ULL;
 

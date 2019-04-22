@@ -8,6 +8,8 @@
 #include <WiFi.h>
 // used to switch WIFI and BT off
 
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 /**************************(Definieren der genutzten Variabeln)****************************/
 
@@ -17,19 +19,27 @@ config_param CONFIG;
 uint64_t lastDisplayUpdate = 946684800ULL;
 uint64_t lastDataUpdate = 946684800ULL;
 
-
-
 /*****************************************( Setup )****************************************/
+
+AsyncWebServer webserver(80);
+
+
 void setup(void)
 {
   Serial.begin(115200);
   DEBUG_PRINT("****( begin )****");
 
   /* comment out if program space is running low (takes ~40% of PROGRAM) */
-  DEBUG_PRINT("disable WIFI and BT");
-  // github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/examples/WiFiBlueToothSwitch/WiFiBlueToothSwitch.ino
-  WiFi.mode(WIFI_OFF);
+  DEBUG_PRINT("disable BT");
   btStop();
+
+  DEBUG_PRINT("Start WIFI AP");
+  // github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/examples/WiFiBlueToothSwitch/WiFiBlueToothSwitch.ino
+  WiFi.persistent(false);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(CONFIG.APSSID, CONFIG.APPASS);
+  DEBUG_PRINT("IP address: ");
+  DEBUG_PRINT(WiFi.softAPIP());
 
   DEBUG_PRINT("load config from file");
   config_get();
@@ -46,6 +56,14 @@ void setup(void)
   DEBUG_PRINT("initialize GPS");
   gps_initialize();
   
+
+  DEBUG_PRINT("start webserver");
+  webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", "Hello, world");
+  });
+
+  webserver.begin();
+
   DEBUG_PRINT("****( complete )****");
 
 }
