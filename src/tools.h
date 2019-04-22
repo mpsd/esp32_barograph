@@ -66,7 +66,7 @@ struct config_param {
   const char* TZOffsetFile = "/config/tzoffset";
 
   const char* APSSID = "espDataLog";
-  const char* APPASS = "connect";
+  const char* APPASS = "ConnectNow!";
 
   uint64_t  DataUpdateInterval = 60ULL;
   uint64_t  DisplayUpdateInterval = 300ULL;
