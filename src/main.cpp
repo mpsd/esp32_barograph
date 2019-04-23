@@ -4,12 +4,10 @@
 #include "database.h"
 #include "bme280.h"
 #include "gps.h"
+#include "webservice.h"
 
 #include <WiFi.h>
 // used to switch WIFI and BT off
-
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
 
 /**************************(Definieren der genutzten Variabeln)****************************/
 
@@ -20,9 +18,6 @@ uint64_t lastDisplayUpdate = 946684800ULL;
 uint64_t lastDataUpdate = 946684800ULL;
 
 /*****************************************( Setup )****************************************/
-
-AsyncWebServer webserver(80);
-
 
 void setup(void)
 {
@@ -58,11 +53,7 @@ void setup(void)
   
 
   DEBUG_PRINT("start webserver");
-  webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", "Hello, world");
-  });
-
-  webserver.begin();
+  webserver_initialize();
 
   DEBUG_PRINT("****( complete )****");
 

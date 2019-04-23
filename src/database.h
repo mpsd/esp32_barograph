@@ -12,6 +12,7 @@
 #define SQLBUFFSIZE 450
 
 void config_get(void);
+void config_set(void);
 
 void db_initialize(void);
 void db_close(void);

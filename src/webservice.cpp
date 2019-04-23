@@ -1,0 +1,77 @@
+#include <Arduino.h>
+#include "webservice.h"
+#include "database.h"   // for write config_set()
+#include "gps.h"        // for GPS functions
+
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
+AsyncWebServer webserver(80);
+
+void webserver_initialize() {
+
+    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->addHeader("Server","ESP Async Web Server");
+        response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
+        response->printf("<title>Webpage at %s</title>", request->url().c_str());
+        response->print("<style> body {font: normal 10px Verdana, Arial, sans-serif;} </style>");
+        response->print("</head><body>");
+
+        response->print("Hello ");
+        response->print(request->client()->remoteIP());
+        
+        response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear() );
+        response->printf("0h:%4.0fhPa %3.1f<br>", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure);
+        response->printf("3h:%4.0fhPa %3.1f<br>", db_hourly_values[3].pressure, db_hourly_values[3].chg_pressure);
+        response->printf("6h:%4.0fhPa %3.1f<br>", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
+    
+        response->print("<h2>Current Config</h2>");
+        response->printf("%s: %4.2f<br>", CONFIG.AltitudeFile, CONFIG.Altitude);
+        response->printf("%s: %04d<br>", CONFIG.TZOffsetFile, CONFIG.TZOffset);
+
+        response->print("<h2>General</h2>");
+        response->print("<ul>");
+        response->printf("<li>Version: HTTP/1.%u</li>", request->version());
+        response->printf("<li>Method: %s</li>", request->methodToString());
+        response->printf("<li>URL: %s</li>", request->url().c_str());
+        response->printf("<li>Host: %s</li>", request->host().c_str());
+        response->printf("<li>ContentType: %s</li>", request->contentType().c_str());
+        response->printf("<li>ContentLength: %u</li>", request->contentLength());
+        response->printf("<li>Multipart: %s</li>", request->multipart()?"true":"false");
+        response->print("</ul>");
+
+        response->print("<h2>Headers</h2>");
+        response->print("<ul>");
+        int headers = request->headers();
+        for(int i=0;i<headers;i++){
+        AsyncWebHeader* h = request->getHeader(i);
+        response->printf("<li>%s: %s</li>", h->name().c_str(), h->value().c_str());
+        }
+        response->print("</ul>");
+
+        response->print("<h2>Parameters</h2>");
+        response->print("<ul>");
+        int params = request->params();
+        for(int i=0;i<params;i++){
+        AsyncWebParameter* p = request->getParam(i);
+        if(p->isFile()){
+            response->printf("<li>FILE[%s]: %s, size: %u</li>", p->name().c_str(), p->value().c_str(), p->size());
+        } else if(p->isPost()){
+            response->printf("<li>POST[%s]: %s</li>", p->name().c_str(), p->value().c_str());
+        } else {
+            response->printf("<li>GET[%s]: %s</li>", p->name().c_str(), p->value().c_str());
+        }
+        }
+        response->print("</ul>");
+
+        response->print("</body></html>");
+        //send the response last
+        request->send(response);
+
+        config_set();
+
+    });
+
+    webserver.begin();
+}

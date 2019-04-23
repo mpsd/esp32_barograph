@@ -46,6 +46,38 @@ void config_get() {
   _spiSD.end();
 }
 
+void config_set() {
+  
+  // SD on HSPI Port
+  // github.com/espressif/arduino-esp32/issues/1219
+  _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
+
+  if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
+    DEBUG_PRINT("Card Mount Failed");
+    return;
+  }
+
+  DEBUG_PRINT("Write Altitude to SD Card");
+  File confile = SD.open(CONFIG.AltitudeFile, FILE_WRITE);
+  String buffer;
+
+  confile.printf("%0.1fF", CONFIG.Altitude);
+  confile.println();
+
+  confile.close();
+  DEBUG_PRINT("Altitude defined");
+  
+  DEBUG_PRINT("Write Timezone Offset to SD Card");
+  confile = SD.open(CONFIG.TZOffsetFile, FILE_WRITE);
+  confile.printf("%d", CONFIG.TZOffset);
+  confile.println();
+
+  confile.close();
+  DEBUG_PRINT("TZOffset defined");
+  
+  _spiSD.end();
+}
+
 void db_initialize() {
   DEBUG_PRINT("initialize SD Card");
   // SD on HSPI Port
