@@ -10,7 +10,7 @@ AsyncWebServer webserver(80);
 
 void webserver_initialize() {
 
-    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("text/html");
         response->addHeader("Server","ESP Async Web Server");
         response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
@@ -27,9 +27,12 @@ void webserver_initialize() {
         response->printf("6h:%4.0fhPa %3.1f<br>", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
     
         response->print("<h2>Current Config</h2>");
-        response->printf("%s: %4.2f<br>", CONFIG.AltitudeFile, CONFIG.Altitude);
-        response->printf("%s: %04d<br>", CONFIG.TZOffsetFile, CONFIG.TZOffset);
-
+        response->print("<form action=\"/configsave\" method=\"post\">");
+        response->printf("<label for=\"alt\">%s:</label><input id=\"alt\" name=\"alt\" type=\"number\" value=\"%0.0f\"><br>", CONFIG.AltitudeFile, CONFIG.Altitude);
+        response->printf("<label for=\"tz\">%s:</label><input id=\"tz\" name=\"tz\" type=\"number\" value=\"%d\"><br>", CONFIG.TZOffsetFile, CONFIG.TZOffset);
+        response->print("<button type=\"submit\">Save</button>");
+        response->print("</form>");
+        
         response->print("<h2>General</h2>");
         response->print("<ul>");
         response->printf("<li>Version: HTTP/1.%u</li>", request->version());
@@ -54,23 +57,55 @@ void webserver_initialize() {
         response->print("<ul>");
         int params = request->params();
         for(int i=0;i<params;i++){
-        AsyncWebParameter* p = request->getParam(i);
-        if(p->isFile()){
-            response->printf("<li>FILE[%s]: %s, size: %u</li>", p->name().c_str(), p->value().c_str(), p->size());
-        } else if(p->isPost()){
-            response->printf("<li>POST[%s]: %s</li>", p->name().c_str(), p->value().c_str());
-        } else {
-            response->printf("<li>GET[%s]: %s</li>", p->name().c_str(), p->value().c_str());
-        }
+            AsyncWebParameter* p = request->getParam(i);
+            if(p->isFile()){
+                response->printf("<li>FILE[%s]: %s, size: %u</li>", p->name().c_str(), p->value().c_str(), p->size());
+            } else if(p->isPost()){
+                response->printf("<li>POST[%s]: %s</li>", p->name().c_str(), p->value().c_str());
+            } else {
+                response->printf("<li>GET[%s]: %s</li>", p->name().c_str(), p->value().c_str());
+            }
         }
         response->print("</ul>");
 
         response->print("</body></html>");
         //send the response last
         request->send(response);
+    });
+
+    webserver.on("/configsave", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->addHeader("Server","ESP Async Web Server");
+        response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
+        response->printf("<title>Webpage at %s</title>", request->url().c_str());
+        response->print("<style> body {font: normal 10px Verdana, Arial, sans-serif;} </style>");
+        response->print("</head><body>");
+
+        int params = request->params();
+        for(int i=0;i<params;i++) {
+            AsyncWebParameter* p = request->getParam(i);
+            if (p->isPost()) {
+                response->printf("POST[%s]: %s<br>", p->name().c_str(), p->value().c_str());
+
+                if ( strcmp(p->name().c_str(), "alt") == 0) {
+                    DEBUG_PRINT("Set Altitude");
+                    CONFIG.Altitude = p->value().toFloat();
+                }
+                if ( strcmp(p->name().c_str(),"tz") == 0 ) {
+                    DEBUG_PRINT("Set TZ offset");
+                    CONFIG.TZOffset = p->value().toInt();
+                }
+
+            } else {
+                response->printf("GET[%s]: %s<br>", p->name().c_str(), p->value().c_str());
+            }
+        }
+
+        response->print("<br><br><a href=\"/\">back</a></body></html>");
+        //send the response last
+        request->send(response);
 
         config_set();
-
     });
 
     webserver.begin();
