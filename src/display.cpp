@@ -13,7 +13,6 @@ void display_initialize(void) {
 }
 
 void display_close() {
-
   display.powerOff();
   _spiDisplay.end();
 }
@@ -66,11 +65,11 @@ void display_update(void)
     display.setCursor( 0, 2*tbh );
     display.printf("%02u/%02u", gps_getDayOfMonth(), gps_getMonth());
     display.setCursor( 0, 3*tbh + 3 );
-    display.printf("0h:%4.0fhPa %3.1f", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure);
+    display.printf("0h:%4.0fhPa %+4.1f", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure);
     display.setCursor( 0, 4*tbh + 3 );
-    display.printf("3h:%4.0fhPa %3.1f", db_hourly_values[3].pressure, db_hourly_values[3].chg_pressure);
+    display.printf("3h:%4.0fhPa %+4.1f", db_hourly_values[3].pressure, db_hourly_values[3].chg_pressure);
     display.setCursor( 0, 5*tbh + 3 );
-    display.printf("6h:%4.0fhPa %3.1f", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
+    display.printf("6h:%4.0fhPa %+4.1f", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure);
     
     display.setCursor( (display.width() - 5*tbw)/2, tbh );
     display.printf("%5.2f", gps_getLat());
