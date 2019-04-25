@@ -7,6 +7,9 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+#define FORM_ALTITUDE "alt"
+#define FORM_TZOFFSET "tzo"
+
 AsyncWebServer webserver(80);
 
 void webserver_initialize() {
@@ -15,7 +18,7 @@ void webserver_initialize() {
         AsyncResponseStream *response = request->beginResponseStream("text/html");
         response->addHeader("Server","ESP Async Web Server");
         response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
-        response->print("<meta http-equiv=\"refresh\" content=\"10\" />");
+        response->print("<meta http-equiv=\"refresh\" content=\"20\" />");
         response->printf("<title>Webpage at %s</title>", request->url().c_str());
         response->print("<style> body {font: normal 12px Verdana, Arial, sans-serif;} </style>");
         response->print("</head><body>");
@@ -30,14 +33,14 @@ void webserver_initialize() {
         response->printf("3h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[3].pressure, db_hourly_values[3].chg_pressure, db_hourly_values[3].temperature, db_hourly_values[3].humidity);
         response->printf("6h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure, db_hourly_values[6].temperature, db_hourly_values[6].humidity);
 
-        response->printf("<br>Dewpoint: %+4.2fC<br>", bme280_getDewPoint());
+        response->printf("<br>Dewpoint: %+4.1fC<br>", bme280_getDewPoint());
 
         response->print("<h3>GPS data</h3>");
-        response->printf( "Sat: %02u, Lat: %08.6f, Lon: %08.6f, HDOP: %04.2f, Alt: %4.0f, Course: %3.0f, Speed: %2.0f<br>",
+        response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat: %08.6f, Lon: %08.6f<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
             gps_getSatellites(),
+            gps_getHDOP(),
             gps_getLat(),
             gps_getLon(),
-            gps_getHDOP(),
             gps_getAltitude(),
             gps_getCourse(),
             gps_getSpeed() );
@@ -45,8 +48,8 @@ void webserver_initialize() {
         
         response->print("<h2>Current Config</h2>");
         response->print("<form action=\"/configsave\" method=\"post\">");
-        response->printf("<label for=\"alt\">%s:</label><input id=\"alt\" name=\"alt\" type=\"number\" value=\"%0.0f\"><br>", CONFIG.AltitudeFile, CONFIG.Altitude);
-        response->printf("<label for=\"tz\">%s:</label><input id=\"tz\" name=\"tz\" type=\"number\" value=\"%d\"><br>", CONFIG.TZOffsetFile, CONFIG.TZOffset);
+        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);
+        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
         response->print("<button type=\"submit\">Save</button>");
         response->print("</form>");
         
@@ -69,11 +72,11 @@ void webserver_initialize() {
             if (p->isPost()) {
                 response->printf("POST[%s]: %s<br>", p->name().c_str(), p->value().c_str());
 
-                if ( strcmp(p->name().c_str(), "alt") == 0) {
+                if ( strcmp(p->name().c_str(), FORM_ALTITUDE) == 0) {
                     DEBUG_PRINT("Set Altitude");
                     CONFIG.Altitude = p->value().toFloat();
                 }
-                if ( strcmp(p->name().c_str(),"tz") == 0 ) {
+                if ( strcmp(p->name().c_str(), FORM_TZOFFSET) == 0 ) {
                     DEBUG_PRINT("Set TZ offset");
                     CONFIG.TZOffset = p->value().toInt();
                 }
