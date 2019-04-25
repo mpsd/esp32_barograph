@@ -45,6 +45,8 @@ uint8_t gps_getSecond();
 
 uint64_t gps_getEpoch();
 
+char * gps_DecimalToDegreeMinutes(float_t decimal);
+
 /* private functions */
 tm * gps_getGMNow();
 tm * gps_getLocalNow();

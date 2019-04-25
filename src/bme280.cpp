@@ -22,22 +22,27 @@ void bme280_initialize() {
 }
 
 float_t bme280_getTemperature() {
-    return bme.readTemperature();
+  return bme.readTemperature();
 }
 
 float_t bme280_getHumidity() {
-    return  bme.readHumidity();
+  return  bme.readHumidity();
 }
 
 float_t bme280_getPressureRaw() {
-    return (bme.readPressure()/100.0F);
+  return (bme.readPressure()/100.0F);
 }
 
 float_t bme280_getPressure() {
-    // https://de.wikipedia.org/wiki/Barometrische_H%C3%B6henformel#Reduktion_auf_Meeresh%C3%B6he
-    return (bme.readPressure()/100.0F)*pow(((bme.readTemperature() + 273.15F)/(bme.readTemperature() + 273.15F + 0.0065F * CONFIG.Altitude)),-5.255);
+  // https://de.wikipedia.org/wiki/Barometrische_H%C3%B6henformel#Reduktion_auf_Meeresh%C3%B6he
+  return (bme.readPressure()/100.0F)*pow(((bme.readTemperature() + 273.15F)/(bme.readTemperature() + 273.15F + 0.0065F * CONFIG.Altitude)),-5.255);
 }
 
 float_t bme280_getAltitude() {
   return CONFIG.Altitude;
+}
+
+float_t bme280_getDewPoint() {
+  // https://www.ajdesigner.com/phphumidity/dewpoint_equation_dewpoint_temperature.php
+  return ( pow((bme.readHumidity()/100.0F), 0.125F) * (112+0.9*bme.readTemperature()) + 0.1*bme.readTemperature() - 112 );
 }

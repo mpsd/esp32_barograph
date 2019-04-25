@@ -2,6 +2,7 @@
 #include "webservice.h"
 #include "database.h"   // for write config_set()
 #include "gps.h"        // for GPS functions
+#include "bme280.h"     // for dewpoint
 
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -14,20 +15,25 @@ void webserver_initialize() {
         AsyncResponseStream *response = request->beginResponseStream("text/html");
         response->addHeader("Server","ESP Async Web Server");
         response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
+        response->print("<meta http-equiv=\"refresh\" content=\"10\" />");
         response->printf("<title>Webpage at %s</title>", request->url().c_str());
-        response->print("<style> body {font: normal 10px Verdana, Arial, sans-serif;} </style>");
+        response->print("<style> body {font: normal 12px Verdana, Arial, sans-serif;} </style>");
         response->print("</head><body>");
 
         response->print("Client ");
         response->print(request->client()->remoteIP());
-        response->printf(" / system uptime: %lu s", millis()/1000);
+        response->printf(" / system uptime: %02lu:%02lu.%02lu<br>", (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
         
         response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear() );
+        response->print("<h3>Climate data</h3>");
         response->printf("0h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure, db_hourly_values[0].temperature, db_hourly_values[0].humidity);
         response->printf("3h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[3].pressure, db_hourly_values[3].chg_pressure, db_hourly_values[3].temperature, db_hourly_values[3].humidity);
         response->printf("6h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure, db_hourly_values[6].temperature, db_hourly_values[6].humidity);
 
-        response->printf( "GPS: Sat: %02u, Lat: %08.6f, Lon: %08.6f, HDOP: %04.2f, Alt: %4.0f, Course: %3.0f, Speed: %2.0f<br>",
+        response->printf("<br>Dewpoint: %+4.2fC<br>", bme280_getDewPoint());
+
+        response->print("<h3>GPS data</h3>");
+        response->printf( "Sat: %02u, Lat: %08.6f, Lon: %08.6f, HDOP: %04.2f, Alt: %4.0f, Course: %3.0f, Speed: %2.0f<br>",
             gps_getSatellites(),
             gps_getLat(),
             gps_getLon(),
@@ -35,7 +41,8 @@ void webserver_initialize() {
             gps_getAltitude(),
             gps_getCourse(),
             gps_getSpeed() );
-            
+        response->printf( "<br>Lat/Lon (Deg MM.MM): %s / %s<br>", gps_DecimalToDegreeMinutes(gps_getLat()), gps_DecimalToDegreeMinutes(gps_getLon()));
+        
         response->print("<h2>Current Config</h2>");
         response->print("<form action=\"/configsave\" method=\"post\">");
         response->printf("<label for=\"alt\">%s:</label><input id=\"alt\" name=\"alt\" type=\"number\" value=\"%0.0f\"><br>", CONFIG.AltitudeFile, CONFIG.Altitude);

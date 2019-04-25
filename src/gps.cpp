@@ -116,6 +116,16 @@ uint64_t gps_getEpoch() {
     return (uint64_t)mktime( gps_getGMNow() );
 }
 
+char * gps_DecimalToDegreeMinutes(float_t decimal) {
+    char * retval = new char[20];
+
+    if (decimal > 0.0F) {
+        sprintf(retval, "%d %5.2f", int(floor(decimal)), (decimal - floor(decimal))*60);
+    } else {
+        sprintf(retval, "%d %5.2f", int(ceil(decimal)), ((decimal - ceil(decimal))*-1*60));
+    }
+    return retval;
+}
 
 /* private functions, epoch style tm structures (after 01/01/1900) */
 tm * gps_getGMNow() {
