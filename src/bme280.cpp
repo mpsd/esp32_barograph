@@ -18,7 +18,6 @@ void bme280_initialize() {
                   Adafruit_BME280::SAMPLING_X4,   // humidity
                   Adafruit_BME280::FILTER_X16,
                   Adafruit_BME280::STANDBY_MS_1000 );
-
 }
 
 float_t bme280_getTemperature() {

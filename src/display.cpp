@@ -44,18 +44,18 @@ void display_update(void)
   DEBUG_PRINT("------------(begin)-------------");
   display_initialize();
   
-  int16_t tbx, tby;
-  uint16_t tbw, tbh;
-  display.getTextBounds("A", 0, 0, &tbx, &tby, &tbw, &tbh); // tbwidth and tbheight of one letter
-
-  tbh += 3;
-
   display.setRotation(1);
   display.setFont(&FreeMonoBold9pt7b);
   display.setTextColor(GxEPD_BLACK);
 
   display.setFullWindow();
   display.firstPage();
+
+  int16_t tbx, tby;
+  uint16_t tbw, tbh;
+  display.getTextBounds("A", 0, 0, &tbx, &tby, &tbw, &tbh); // tbwidth and tbheight of one letter
+
+  tbh += 3;
 
   do
   {
