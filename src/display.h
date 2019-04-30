@@ -2,6 +2,8 @@
 #define DISPLAY_H
 
 #include "tools.h"
+#include "gps.h"
+
 
 #include <GxEPD2.h>
 

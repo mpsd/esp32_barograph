@@ -85,15 +85,16 @@ struct db_hourly_value {
   uint64_t timestamp;
   float_t chg_pressure;
 };
-extern db_hourly_value db_hourly_values[];
 #define HOURLY_VALUES 7
+extern db_hourly_value db_hourly_values[HOURLY_VALUES];
+
 
 struct db_pressure_graph_value {
   uint16_t x;
   float_t pressure;
   uint64_t timestamp;
 };
-extern db_pressure_graph_value db_pressure_graph_values[];
 #define GRAPH_VALUES 201
+extern db_pressure_graph_value db_pressure_graph_values[GRAPH_VALUES];
 
 #endif

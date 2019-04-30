@@ -34,7 +34,7 @@ void setup(void)
   WiFi.mode(WIFI_AP);
   WiFi.softAP(CONFIG.APSSID, CONFIG.APPASS);
   DEBUG_PRINT("IP address: ");
-  DEBUG_PRINT(WiFi.softAPIP().toString());
+  DEBUG_PRINT(WiFi.softAPIP().toString().c_str());
 
   DEBUG_PRINT("load config from file");
   config_get();

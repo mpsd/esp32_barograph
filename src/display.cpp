@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "display.h"
-#include "gps.h"
 
 SPIClass _spiDisplay(VSPI);
 GxEPD2_BW<GxEPD2_154, GxEPD2_154::HEIGHT> display(GxEPD2_154(/*CS*/ _epd_spi_cs, /*DC*/ _epd_dc, /*RST*/ _epd_rst, /*BUSY*/ _epd_busy));

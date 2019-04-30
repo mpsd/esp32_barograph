@@ -201,10 +201,11 @@ void db_fetchData() {
   }
 
   DEBUG_PRINT("Calculate pressure changes");
-
   if (db_hourly_values[1].pressure > 0 ) { db_hourly_values[0].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[1].pressure; }
-  if (db_hourly_values[3].pressure > 0 ) { db_hourly_values[3].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[3].pressure; }
-  if (db_hourly_values[6].pressure > 0 ) { db_hourly_values[6].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[6].pressure; }
+  
+  for (int i=1; i < UBOUND(db_hourly_values); i++) {
+    if ( db_hourly_values[i].pressure > 0 ) { db_hourly_values[i].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[i].pressure; }
+  }
   
   db_close();
   DEBUG_PRINT("****( complete )****");

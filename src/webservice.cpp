@@ -1,8 +1,5 @@
 #include <Arduino.h>
 #include "webservice.h"
-#include "database.h"   // for write config_set()
-#include "gps.h"        // for GPS functions
-#include "bme280.h"     // for dewpoint
 
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -29,10 +26,9 @@ void webserver_initialize() {
         
         response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear() );
         response->print("<h3>Climate data</h3>");
-        response->printf("0h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure, db_hourly_values[0].temperature, db_hourly_values[0].humidity);
-        response->printf("3h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[3].pressure, db_hourly_values[3].chg_pressure, db_hourly_values[3].temperature, db_hourly_values[3].humidity);
-        response->printf("6h:%4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", db_hourly_values[6].pressure, db_hourly_values[6].chg_pressure, db_hourly_values[6].temperature, db_hourly_values[6].humidity);
-
+        for (int i=0; i < UBOUND(db_hourly_values); i++) {
+            response->printf("%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity);
+        }
         response->printf("<br>Dewpoint: %+4.1fC<br>", bme280_getDewPoint());
 
         response->print("<h3>GPS data</h3>");
