@@ -8,7 +8,10 @@
 #include <Adafruit_BME280.h>
 
 void bme280_initialize();
+float_t bme280_getTemperatureRaw();
 float_t bme280_getTemperature();
+float_t bme280_getTemperatureOffset();
+float_t bme280_getHumidityRaw();
 float_t bme280_getHumidity();
 float_t bme280_getPressureRaw();
 float_t bme280_getPressure();

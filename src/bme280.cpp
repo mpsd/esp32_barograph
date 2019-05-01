@@ -20,12 +20,26 @@ void bme280_initialize() {
                   Adafruit_BME280::STANDBY_MS_1000 );
 }
 
-float_t bme280_getTemperature() {
+float_t bme280_getTemperatureRaw() {
   return bme.readTemperature();
 }
 
+float_t bme280_getTemperature() {
+  return (bme.readTemperature() + CONFIG.TemperatureOffset);
+}
+
+float_t bme280_getTemperatureOffset() {
+  return CONFIG.TemperatureOffset;
+}
+
+float_t bme280_getHumidityRaw() {
+  return bme.readHumidity();
+}
+
 float_t bme280_getHumidity() {
-  return  bme.readHumidity();
+  // https://de.wikipedia.org/wiki/S%C3%A4ttigung_(Physik)
+  // Absolute Saettigung = (0.0316*Temp^2 - 0.2214*Temp + 8.8679) für 10 <= Temp <= 40
+  return (0.0316F*pow(bme.readTemperature(), 2)-0.2214F*bme.readTemperature()+8.8679F)*bme.readHumidity()/(0.0316F*pow(bme280_getTemperature(), 2)-0.2214F*bme280_getTemperature()+8.8679F);
 }
 
 float_t bme280_getPressureRaw() {

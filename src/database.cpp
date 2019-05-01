@@ -31,7 +31,7 @@ void config_get() {
   }
   confile.close();
 
-  DEBUG_PRINT("Read Timezone Offset from SD Card");
+  DEBUG_PRINT("Read Timezone offset from SD Card");
   confile = SD.open(CONFIG.TZOffsetFile);
   
   if (!confile) {
@@ -40,6 +40,18 @@ void config_get() {
   else {
     CONFIG.TZOffset = confile.readStringUntil('\n').toInt();
     DEBUG_PRINT("TZOffset defined");
+  }
+  confile.close();
+
+  DEBUG_PRINT("Read Temperature offset from SD Card");
+  confile = SD.open(CONFIG.TemperatureOffsetFile);
+  
+  if (!confile) {
+    DEBUG_PRINT("Temperature offset config file not found");
+  }
+  else {
+    CONFIG.TemperatureOffset = confile.readStringUntil('\n').toInt();
+    DEBUG_PRINT("TemperatureOffset defined");
   }
   confile.close();
 
@@ -75,6 +87,14 @@ void config_set() {
   confile.close();
   DEBUG_PRINT("TZOffset defined");
   
+  DEBUG_PRINT("Write Temperature offset to SD Card");
+  confile = SD.open(CONFIG.TemperatureOffsetFile, FILE_WRITE);
+  confile.printf("%0.1fF", CONFIG.TemperatureOffset);
+  confile.println();
+
+  confile.close();
+  DEBUG_PRINT("Temperature offset defined");
+
   _spiSD.end();
 }
 
@@ -211,7 +231,7 @@ void db_fetchData() {
   DEBUG_PRINT("****( complete )****");
 }
 
-void db_pushData(float_t lat = 0, float_t lon = 0, float_t alt_m = 0, float_t crs = 0, float_t spd = 0, uint32_t sat = 0, float_t hdop = 0, float_t temp = 0, float_t hum = 0, float_t press_raw = 0, float_t press = 0,  float_t alt = 0, uint64_t tst = 0) {
+void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t spd, uint32_t sat, float_t hdop, float_t temp_raw, float_t temp, float_t temp_offset, float_t hum_raw, float_t hum, float_t press_raw, float_t press, float_t alt, uint64_t tst) {
   DEBUG_PRINT("****( begin )****");
   db_initialize();
 
@@ -219,8 +239,8 @@ void db_pushData(float_t lat = 0, float_t lon = 0, float_t alt_m = 0, float_t cr
   char sqlbuffer[SQLBUFFSIZE];
   
   sprintf(sqlbuffer, 
-    "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
-    lat, lon, alt_m, crs, spd, sat, hdop, temp, hum, press_raw, press, alt, tst);
+    "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
+    lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst);
   DEBUG_PRINT(sqlbuffer);
 
   error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);

@@ -61,9 +61,11 @@
 struct config_param {
   float_t   Altitude = 540.0F;
   int32_t   TZOffset = 2;
+  float_t   TemperatureOffset = -1.5F;
 
   const char* AltitudeFile = "/config/altitude";
   const char* TZOffsetFile = "/config/tzoffset";
+  const char* TemperatureOffsetFile = "/config/tempoffset";
 
   const char* APSSID = "espDataLog";
   const char* APPASS = "ConnectNow!";

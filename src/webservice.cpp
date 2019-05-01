@@ -6,6 +6,7 @@
 
 #define FORM_ALTITUDE "alt"
 #define FORM_TZOFFSET "tzo"
+#define FORM_TEMPOFFSET "tempofst"
 
 AsyncWebServer webserver(80);
 
@@ -46,6 +47,7 @@ void webserver_initialize() {
         response->print("<form action=\"/configsave\" method=\"post\">");
         response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);
         response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
+        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
         response->print("<button type=\"submit\">Save</button>");
         response->print("</form>");
         
