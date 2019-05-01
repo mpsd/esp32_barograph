@@ -47,7 +47,7 @@ void webserver_initialize() {
         response->print("<form action=\"/configsave\" method=\"post\">");
         response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);
         response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
-        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
+        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" step=\"0.1\" value=\"%0.1f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
         response->print("<button type=\"submit\">Save</button>");
         response->print("</form>");
         
@@ -77,6 +77,10 @@ void webserver_initialize() {
                 if ( strcmp(p->name().c_str(), FORM_TZOFFSET) == 0 ) {
                     DEBUG_PRINT("Set TZ offset");
                     CONFIG.TZOffset = p->value().toInt();
+                }
+                if ( strcmp(p->name().c_str(), FORM_TEMPOFFSET) == 0) {
+                    DEBUG_PRINT("Set Temperature offset");
+                    CONFIG.TemperatureOffset = p->value().toFloat();
                 }
 
             } else {
