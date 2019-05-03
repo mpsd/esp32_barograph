@@ -18,7 +18,7 @@ void webserver_initialize() {
         response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
         response->print("<meta http-equiv=\"refresh\" content=\"20\" />");
         response->printf("<title>Webpage at %s</title>", request->url().c_str());
-        response->print("<style> body {font: normal 12px Verdana, Arial, sans-serif;} </style>");
+        response->print("<style> body { font: normal 12px Verdana, Arial, sans-serif; }</style>");
         response->print("</head><body>");
 
         response->print("Client ");
@@ -32,6 +32,19 @@ void webserver_initialize() {
         }
         response->printf("<br>Dewpoint: %+4.1fC<br>", bme280_getDewPoint());
 
+        response->print("<svg height=\"200\" width=\"400\">");
+        response->print("<g stroke-dasharray=\"1,1\" fill=\"none\" stroke=\"black\" stroke-width=\"1\">");
+        response->print("<polyline points=\"0,0 400,0\" /><polyline points=\"0,40 400,40\" /><polyline points=\"0,80 400,80\" />");
+        response->print("<polyline points=\"0,120 400,120\" /><polyline points=\"0,160 400,160\" /><polyline points=\"0,200 400,200\" />");
+        response->print("<polyline points=\"200,0 200,200\" /><polyline points=\"300,0 300,200\" /><polyline points=\"350,0 350,200\" /><polyline points=\"400,0 400,200\" /></g>");
+        response->print("<text x=\"5\" y=\"35\" style=\"fill:red;\">1020<tspan x=\"5\" y=\"115\">1000</tspan><tspan x=\"5\" y=\"195\">980</tspan></text>");
+        response->print("<g fill=\"none\" stroke=\"red\" stroke-width=\"2\"><polyline points=\"");
+        for (int i=0; i < UBOUND(db_pressure_graph_values); i++) {
+            if (db_pressure_graph_values[i].pressure > 0) response->printf("%d,%0.0f ", i, 4*(1030 - db_pressure_graph_values[i].pressure));
+        }
+        response->print("\" /></g>");
+        response->print("</svg>");
+  
         response->print("<h3>GPS data</h3>");
         response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat: %08.6f, Lon: %08.6f<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
             gps_getSatellites(),
