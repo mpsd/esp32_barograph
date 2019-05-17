@@ -40,7 +40,7 @@ void webserver_initialize() {
         response->print("<text x=\"5\" y=\"35\" style=\"fill:red;\">1020<tspan x=\"5\" y=\"115\">1000</tspan><tspan x=\"5\" y=\"195\">980</tspan></text>");
         response->print("<g fill=\"none\" stroke=\"red\" stroke-width=\"2\"><polyline points=\"");
         for (int i=0; i < UBOUND(db_pressure_graph_values); i++) {
-            if (db_pressure_graph_values[i].pressure > 0) response->printf("%d,%0.0f ", i, 4*(1030 - db_pressure_graph_values[i].pressure));
+            if (db_pressure_graph_values[i].pressure > 0) response->printf("%d,%0.0f ", 2*i, 4*(1030 - db_pressure_graph_values[i].pressure));
         }
         response->print("\" /></g>");
         response->print("</svg>");

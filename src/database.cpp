@@ -50,7 +50,7 @@ void config_get() {
     DEBUG_PRINT("Temperature offset config file not found");
   }
   else {
-    CONFIG.TemperatureOffset = confile.readStringUntil('\n').toInt();
+    CONFIG.TemperatureOffset = confile.readStringUntil('\n').toFloat();
     DEBUG_PRINT("TemperatureOffset defined");
   }
   confile.close();
