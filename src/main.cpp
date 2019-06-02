@@ -15,8 +15,8 @@
 config_param CONFIG;
 
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
-uint64_t lastDisplayUpdate = 946684800ULL;
-uint64_t lastDataUpdate = 946684800ULL;
+uint64_t lastDisplayUpdate = 0ULL;
+uint64_t lastDataUpdate = 0ULL;
 
 /*****************************************( Setup )****************************************/
 
@@ -92,12 +92,14 @@ void loop()
     db_fetchData();
     display_update();
   }
+  
   gps_delay(1000);
 
-  if ( gps_DateTimeIsValid() ) {
-    ds3231_setDateTime( gps_getEpoch() );
-  } else {
-    // reset GPS after x minutes
-  }
+  Serial.printf("RTC Epoch: %llu\n",ds3231_getEpoch() );  
   
+  if ( gps_DateTimeIsValid() ) {
+      DEBUG_PRINT("Resync RTC to GPS");
+      ds3231_setDateTime( gps_getEpoch() );
+    }
+
 }

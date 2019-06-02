@@ -171,7 +171,7 @@ void db_fetchData() {
   sqlite3_finalize(res1);
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-  sprintf(sqlbuffer, "SELECT gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - (24*3600)) ORDER BY gmtimestamp DESC;",
+  sprintf(sqlbuffer, "SELECT gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - (24*3600)) ORDER BY gmtimestamp DESC LIMIT 2000;",
       current_timestamp,
       current_timestamp);
   DEBUG_PRINT(sqlbuffer);

@@ -121,8 +121,3 @@ tm * ds3231_getLocalNow() {
     time_t rawtime = (time_t)ds3231_getEpoch() + (time_t)(CONFIG.TZOffset * 3600);
     return gmtime( &rawtime );
 }
-
-tm * ds3231_getLocalNow(uint64_t tst) {
-    time_t rawtime = (time_t)tst + (time_t)CONFIG.TZOffset;
-    return gmtime( &rawtime );
-}
