@@ -3,7 +3,7 @@
 
 #include "tools.h"
 #include "gps.h"
-
+#include "ds3231.h"
 
 #include <GxEPD2.h>
 

@@ -59,7 +59,6 @@ void setup(void)
   webserver_initialize();
 
   DEBUG_PRINT("****( complete )****");
-
 }
 
 /*************************************(Hauptprogramm)**************************************/
@@ -93,6 +92,12 @@ void loop()
     db_fetchData();
     display_update();
   }
-
   gps_delay(1000);
+
+  if ( gps_DateTimeIsValid() ) {
+    ds3231_setDateTime( gps_getEpoch() );
+  } else {
+    // reset GPS after x minutes
+  }
+  
 }

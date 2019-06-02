@@ -25,7 +25,7 @@ void webserver_initialize() {
         response->print(request->client()->remoteIP());
         response->printf(" / system uptime: %02lu:%02lu.%02lu<br>", (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
         
-        response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear() );
+        response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
         response->print("<h3>Climate data</h3>");
         for (int i=0; i < UBOUND(db_hourly_values); i++) {
             response->printf("%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%%<br>", i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity);

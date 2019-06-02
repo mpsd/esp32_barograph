@@ -3,15 +3,6 @@
 
 RtcDS3231<TwoWire> Rtc(Wire);
 
-/*
-	RtcTemperature temp = Rtc.GetTemperature();
-	temp.Print(Serial);
-	// you may also get the temperature as a float and print it
-  // Serial.print(temp.AsFloatDegC());
-  Serial.println("C");
-  */
-
-
 void ds3231_initialize() {
 
   DEBUG_PRINT("initialize DS3231");
@@ -25,8 +16,8 @@ void ds3231_initialize() {
           // we have a communications error
           // see https://www.arduino.cc/en/Reference/WireEndTransmission for 
           // what the number means
-          DEBUG_PRINT("RTC communications error = ");
-          DEBUG_PRINT(Rtc.LastError());
+          DEBUG_PRINT("RTC communications error");
+          // DEBUG_PRINT(Rtc.LastError());
       }
       else
       {
@@ -39,7 +30,7 @@ void ds3231_initialize() {
           // following line sets the RTC to the date & time this sketch was compiled
           // it will also reset the valid flag internally unless the Rtc device is
           // having an issue
-        }
+      }
   }
 
   if ( !Rtc.GetIsRunning() )
@@ -49,11 +40,11 @@ void ds3231_initialize() {
   }
 
   RtcDateTime now = Rtc.GetDateTime();
-  char datestring[20];
+  char datestring[40];
 
   snprintf_P(datestring, 
     UBOUND(datestring),
-    PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+    PSTR("Current Time: %02u/%02u/%04u %02u:%02u:%02u"),
     now.Month(),
     now.Day(),
     now.Year(),
@@ -73,11 +64,11 @@ void ds3231_setDateTime(RtcDateTime now) {
     Rtc.SetDateTime( now );
 
     RtcDateTime dt = Rtc.GetDateTime();
-    char datestring[20];
+    char datestring[40];
 
     snprintf_P(datestring, 
             UBOUND(datestring),
-            PSTR("%02u/%02u/%04u %02u:%02u:%02u"),
+            PSTR("Set to: %02u/%02u/%04u %02u:%02u:%02u"),
             dt.Month(),
             dt.Day(),
             dt.Year(),
@@ -92,11 +83,6 @@ void ds3231_setDateTime(uint64_t tst) {
     ds3231_setDateTime( now );
 }
 
-void ds3231_setDateTime(uint16_t year, uint8_t month, uint8_t dom, uint8_t hour, uint8_t minute, uint8_t second) {
-    RtcDateTime now = RtcDateTime(year, month, dom, hour, minute, second);
-    ds3231_setDateTime( now );
-}
-
 bool ds3231_IsValid() {
     return Rtc.IsDateTimeValid();
 }
@@ -107,21 +93,36 @@ uint64_t ds3231_getEpoch() {
 }
 
 uint8_t ds3231_getHour() {
-    RtcDateTime now = Rtc.GetDateTime();
-    return now.Hour();
+    return (uint8_t)ds3231_getLocalNow()->tm_hour;
 }
 
 uint8_t ds3231_getMinute() {
-    RtcDateTime now = Rtc.GetDateTime();
-    return now.Minute();
+    return (uint8_t)ds3231_getLocalNow()->tm_min;
+}
+
+uint8_t ds3231_getSecond() {
+    return (uint8_t)ds3231_getLocalNow()->tm_sec;
 }
 
 uint8_t ds3231_getDayOfMonth() {
-    RtcDateTime now = Rtc.GetDateTime();
-    return now.Day();
+    return (uint8_t)ds3231_getLocalNow()->tm_mday;
 }
 
 uint8_t ds3231_getMonth() {
-    RtcDateTime now = Rtc.GetDateTime();
-    return now.Month();
+    return (uint8_t)ds3231_getLocalNow()->tm_mon + 1;
+}
+
+uint16_t ds3231_getYear() {
+    return (uint16_t)ds3231_getLocalNow()->tm_year + 1900;
+}
+
+/* private functions, epoch style tm structures (after 01/01/1900) */
+tm * ds3231_getLocalNow() {
+    time_t rawtime = (time_t)ds3231_getEpoch() + (time_t)(CONFIG.TZOffset * 3600);
+    return gmtime( &rawtime );
+}
+
+tm * ds3231_getLocalNow(uint64_t tst) {
+    time_t rawtime = (time_t)tst + (time_t)CONFIG.TZOffset;
+    return gmtime( &rawtime );
 }

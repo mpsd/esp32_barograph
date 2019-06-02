@@ -60,9 +60,9 @@ void display_update(void)
   {
     display.fillScreen(GxEPD_WHITE);
     display.setCursor( 0, tbh );
-    display.printf("%02u:%02u", gps_getHour(), gps_getMinute());
+    display.printf("%02u:%02u", ds3231_getHour(), ds3231_getMinute());
     display.setCursor( 0, 2*tbh );
-    display.printf("%02u/%02u", gps_getDayOfMonth(), gps_getMonth());
+    display.printf("%02u/%02u", ds3231_getDayOfMonth(), ds3231_getMonth());
     display.setCursor( 0, 3*tbh + 3 );
     display.printf("0h:%4.0fhPa %+4.1f", db_hourly_values[0].pressure, db_hourly_values[0].chg_pressure);
     display.setCursor( 0, 4*tbh + 3 );
