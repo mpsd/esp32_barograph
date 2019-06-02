@@ -4,6 +4,7 @@
 #include "database.h"
 #include "bme280.h"
 #include "gps.h"
+#include "ds3231.h"
 #include "webservice.h"
 
 #include <WiFi.h>
@@ -50,7 +51,9 @@ void setup(void)
 
   DEBUG_PRINT("initialize GPS");
   gps_initialize();
-  
+
+  DEBUG_PRINT("initialize RTC DS3231");
+  ds3231_initialize();
 
   DEBUG_PRINT("start webserver");
   webserver_initialize();

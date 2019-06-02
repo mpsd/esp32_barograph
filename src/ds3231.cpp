@@ -17,8 +17,7 @@ void ds3231_initialize() {
   DEBUG_PRINT("initialize DS3231");
   // example DS3231 Simple
   Rtc.Begin();
-  RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
-
+  
   if ( !Rtc.IsDateTimeValid() ) 
   {
       if (Rtc.LastError() != 0)
@@ -40,9 +39,7 @@ void ds3231_initialize() {
           // following line sets the RTC to the date & time this sketch was compiled
           // it will also reset the valid flag internally unless the Rtc device is
           // having an issue
-
-          Rtc.SetDateTime(compiled);
-      }
+        }
   }
 
   if ( !Rtc.GetIsRunning() )
@@ -64,20 +61,6 @@ void ds3231_initialize() {
     now.Minute(),
     now.Second() );
   DEBUG_PRINT(datestring);
-
-  if (now < compiled) 
-  {
-      DEBUG_PRINT("RTC is older than compile time!  (Updating DateTime)");
-      Rtc.SetDateTime(compiled);
-  }
-  else if (now > compiled) 
-  {
-      DEBUG_PRINT("RTC is newer than compile time. (this is expected)");
-  }
-  else if (now == compiled) 
-  {
-      DEBUG_PRINT("RTC is the same as compile time! (not expected but all is fine)");
-  }
 
   // never assume the Rtc was last configured by you, so
   // just clear them to your needed state
