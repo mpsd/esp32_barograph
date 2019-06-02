@@ -171,9 +171,9 @@ void db_fetchData() {
   sqlite3_finalize(res1);
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-  sprintf(sqlbuffer, "SELECT gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - (24*3600)) ORDER BY gmtimestamp DESC LIMIT 2000;",
+  sprintf(sqlbuffer, "SELECT gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= %ld ORDER BY gmtimestamp DESC LIMIT 2000;",
       current_timestamp,
-      current_timestamp);
+      current_timestamp - (24*3600));
   DEBUG_PRINT(sqlbuffer);
 
   error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
@@ -184,7 +184,7 @@ void db_fetchData() {
 
   while (sqlite3_step(res1) == SQLITE_ROW) {
     id = floor(200-(sqlite3_column_int(res1, 2)*200/(24*3600)));
-    Serial.printf("id: %u, tst: %d, tstoffset: %d \n", id, sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 2));
+    Serial.printf("id (x): %u, tst: %d, tstoffset: %d \n", id, sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 2));
 
     db_pressure_graph_values[ id ].x = id;
     db_pressure_graph_values[ id ].pressure = sqlite3_column_double(res1, 1);

@@ -10,6 +10,8 @@ void gps_initialize() {
         DEBUG_PRINT("GPS not found");
         delay(1000);
     }
+    gps_delay(1000);
+    DEBUG_PRINT("GPS initialized");
 }
 
 void gps_delay( unsigned long ms ) {
