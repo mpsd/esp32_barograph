@@ -3,14 +3,6 @@
 
 #include "tools.h"
 
-/*
-  DS3231 RTC:   ESP32 Devkitv1 / I2C:
-  VCC           3V
-  GND           GND
-  SCL           D22: 22 (I2C SCL)
-  SDA           D21: 21 (I2C SDA)
-*/
-
 #include <RtcDS3231.h>
 // builtin libraries
 #include <Wire.h>
@@ -24,9 +16,9 @@ void ds3231_setDateTime(uint16_t year, uint8_t month, uint8_t dom, uint8_t hour,
 bool ds3231_IsValid();
 
 uint64_t ds3231_getEpoch();
-uint8_t ds3231_Hour();
-uint8_t ds3231_Minute();
-uint8_t ds3231_DayOfMonth();
-uint8_t ds3231_Month();
+uint8_t ds3231_getHour();
+uint8_t ds3231_getMinute();
+uint8_t ds3231_getDayOfMonth();
+uint8_t ds3231_getMonth();
 
 #endif

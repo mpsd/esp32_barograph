@@ -106,22 +106,22 @@ uint64_t ds3231_getEpoch() {
     return now.Epoch64Time();
 }
 
-uint8_t ds3231_Hour() {
+uint8_t ds3231_getHour() {
     RtcDateTime now = Rtc.GetDateTime();
     return now.Hour();
 }
 
-uint8_t ds3231_Minute() {
+uint8_t ds3231_getMinute() {
     RtcDateTime now = Rtc.GetDateTime();
     return now.Minute();
 }
 
-uint8_t ds3231_DayOfMonth() {
+uint8_t ds3231_getDayOfMonth() {
     RtcDateTime now = Rtc.GetDateTime();
     return now.Day();
 }
 
-uint8_t ds3231_Month() {
+uint8_t ds3231_getMonth() {
     RtcDateTime now = Rtc.GetDateTime();
     return now.Month();
 }

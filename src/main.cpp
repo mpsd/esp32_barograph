@@ -66,7 +66,7 @@ void setup(void)
 void loop()
 {
   
-  if ( gps_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
+  if ( ds3231_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
     db_pushData( gps_getLat(),
         gps_getLon(),
@@ -83,13 +83,13 @@ void loop()
         bme280_getPressureRaw(),
         bme280_getPressure(),
         bme280_getAltitude(),
-        gps_getEpoch() );
-    lastDataUpdate = gps_getEpoch();
+        ds3231_getEpoch() );
+    lastDataUpdate = ds3231_getEpoch();
   }
 
-  if (( gps_getMinute() %5 == 0) && (gps_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
+  if (( ds3231_getMinute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
     DEBUG_PRINT("Update display");
-    lastDisplayUpdate = gps_getEpoch(); // due to long running db fetch reset timer at the beginning
+    lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
     db_fetchData();
     display_update();
   }
