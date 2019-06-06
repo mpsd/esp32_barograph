@@ -132,12 +132,10 @@ void db_fetchData() {
 
   int error = 0;
   sqlite3_stmt *res1;
-  // sqlite3_stmt *res2;
   char sqlbuffer[SQLBUFFSIZE];
 
   time_t current_timestamp = 0;
-  uint32_t id = 0;
-
+  
   DEBUG_PRINT("Reset variables");
 
   for (int i=0; i < UBOUND(db_hourly_values); i++) {
@@ -171,9 +169,12 @@ void db_fetchData() {
   sqlite3_finalize(res1);
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-  sprintf(sqlbuffer, "SELECT gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= %ld ORDER BY gmtimestamp DESC LIMIT 2000;",
+  sprintf(sqlbuffer, 
+      "SELECT 200-(abs(%ld - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, pressure, abs(%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - 24*3600) ORDER BY id DESC, timestampoffset DESC LIMIT 2000;",
       current_timestamp,
-      current_timestamp - (24*3600));
+      current_timestamp,
+      current_timestamp);
+
   DEBUG_PRINT(sqlbuffer);
 
   error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
@@ -183,12 +184,11 @@ void db_fetchData() {
   }
 
   while (sqlite3_step(res1) == SQLITE_ROW) {
-    id = floor(200-(sqlite3_column_int(res1, 2)*200/(24*3600)));
-    Serial.printf("id (x): %u, tst: %d, tstoffset: %d \n", id, sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 2));
+    Serial.printf("id (x): %d, tst: %d, tstoffset: %d \n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1), sqlite3_column_int(res1, 3));
 
-    db_pressure_graph_values[ id ].x = id;
-    db_pressure_graph_values[ id ].pressure = sqlite3_column_double(res1, 1);
-    db_pressure_graph_values[ id ].timestamp = sqlite3_column_int(res1, 0);
+    db_pressure_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
+    db_pressure_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
+    db_pressure_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 2);
   }
   sqlite3_finalize(res1);
 
@@ -217,35 +217,6 @@ void db_fetchData() {
     }
   }
   sqlite3_finalize(res1);
-
-  
-  /*
-  for (int i=0; i < UBOUND(db_hourly_values); i++) {
-    sprintf(sqlbuffer, 
-        "SELECT temperature, humidity, pressure, gmtimestamp FROM t_datalog WHERE abs(%ld - gmtimestamp) < 300 ORDER BY abs(%ld - gmtimestamp) ASC LIMIT 1;",
-        current_timestamp - (i * 3600),
-        current_timestamp - (i * 3600));
-    DEBUG_PRINT(sqlbuffer);
-
-    error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
-
-    if ( error != SQLITE_OK ) {
-      DEBUG_PRINT("No data found");
-      DEBUG_PRINT(sqlite3_errstr(error));
-      sqlite3_finalize(res1);
-      db_close();
-      return;
-    }
-
-    while (sqlite3_step(res1) == SQLITE_ROW) {
-      db_hourly_values[i].temperature = sqlite3_column_double(res1, 0);
-      db_hourly_values[i].humidity    = sqlite3_column_double(res1, 1);
-      db_hourly_values[i].pressure    = sqlite3_column_double(res1, 2);
-      db_hourly_values[i].timestamp   = sqlite3_column_int(res1, 3);
-    }
-    sqlite3_finalize(res1);
-  }
-  */
 
   DEBUG_PRINT("Calculate pressure changes");
   if (db_hourly_values[1].pressure > 0 ) { db_hourly_values[0].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[1].pressure; }
