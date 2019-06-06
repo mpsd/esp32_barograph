@@ -17,6 +17,7 @@ config_param CONFIG;
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
 uint64_t lastDisplayUpdate = 946684800ULL;
 uint64_t lastDataUpdate = 946684800ULL;
+uint64_t lastRTCSync = 946684800ULL;
 
 /*****************************************( Setup )****************************************/
 
@@ -96,13 +97,15 @@ void loop()
   gps_delay(1000);
 
   // sync RTC once per hour to GPS time
-  if ( ( ds3231_getMinute() % 58 == 0) && (gps_DateTimeIsValid()) ) {
+  if ( ( ds3231_getEpoch() - CONFIG.RTCSyncInterval >= lastRTCSync ) && (gps_DateTimeIsValid()) ) {
       DEBUG_PRINT("Resync RTC to GPS");
       gps_delay(2000);                    // get most recent values
       if (gps_DateTimeIsValid())
         ds3231_setDateTime( gps_getEpoch() );
+      lastRTCSync = ds3231_getEpoch();
   }
-    
+  
+  
   Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu\n", ds3231_getDayOfMonth(), \
     ds3231_getMonth(),     \
     ds3231_getYear(),      \

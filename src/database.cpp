@@ -170,7 +170,7 @@ void db_fetchData() {
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
   sprintf(sqlbuffer, 
-      "SELECT 200-(abs(%ld - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, pressure, abs(%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - 24*3600) ORDER BY id DESC, timestampoffset DESC LIMIT 2000;",
+      "SELECT 200-((%ld - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - 24*3600) ORDER BY gmtimestamp ASC LIMIT 2000;",
       current_timestamp,
       current_timestamp,
       current_timestamp);
