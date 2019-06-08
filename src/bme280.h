@@ -18,5 +18,6 @@ float_t bme280_getPressure();
 float_t bme280_getAltitude();
 
 float_t bme280_getDewPoint();
+float_t bme280_getDewPoint(float_t hum, float_t temp);
 
 #endif

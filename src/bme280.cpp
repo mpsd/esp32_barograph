@@ -56,6 +56,16 @@ float_t bme280_getAltitude() {
 }
 
 float_t bme280_getDewPoint() {
+  return bme280_getDewPoint( bme.readHumidity(), bme.readTemperature() );
+}
+
+float_t bme280_getDewPoint(float_t hum, float_t temp) {
   // https://www.ajdesigner.com/phphumidity/dewpoint_equation_dewpoint_temperature.php
-  return ( pow((bme.readHumidity()/100.0F), 0.125F) * (112+0.9*bme.readTemperature()) + 0.1*bme.readTemperature() - 112 );
+  return ( pow((hum/100.0F), 0.125F) * (112.0F+0.9F*temp) + 0.1F*temp - 112.0F );
+
+  // https://www.schweizer-fn.de/lueftung/feuchte/feuchte.php#taupunkt
+  // return (pow(hum/100.0F, 1/8.02F) * (109.8F + temp) -109.8F)
+
+  // https://www.chemie.de/lexikon/Taupunkt.html#Berechnung_von_Taupunkt_und_Frostpunkt
+  // return (241.2F * log(hum/100.0F) + (4222.03716F * temp)/(241.2F + temp))/(17.5043F - log(hum/100.0F) - (17.5043F*temp)/(241.2F+temp));
 }
