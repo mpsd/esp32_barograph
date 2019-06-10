@@ -100,9 +100,10 @@ void loop()
   if ( ( ds3231_getEpoch() - CONFIG.RTCSyncInterval >= lastRTCSync ) && (gps_DateTimeIsValid()) ) {
       DEBUG_PRINT("Resync RTC to GPS");
       gps_delay(2000);                    // get most recent values
-      if (gps_DateTimeIsValid())
+      if (gps_DateTimeIsValid()) {
         ds3231_setDateTime( gps_getEpoch() );
-      lastRTCSync = ds3231_getEpoch();
+        lastRTCSync = ds3231_getEpoch();
+      }
   }
   
   

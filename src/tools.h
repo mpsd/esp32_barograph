@@ -78,7 +78,7 @@ struct config_param {
 
   uint64_t  DataUpdateInterval = 60ULL;
   uint64_t  DisplayUpdateInterval = 300ULL;
-  uint64_t  RTCSyncInterval = 1800ULL;
+  uint64_t  RTCSyncInterval = 3600ULL;
   
   uint32_t SDSpeed = 27000000U;
   int32_t GPSBaud = 9600;
