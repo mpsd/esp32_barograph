@@ -104,7 +104,7 @@ void display_update(void)
     display.print("0h");
 
     for (int i=0; i<201; i++) {
-      display.drawPixel( db_pressure_graph_values[i].x , (80 + 2*(1030 - db_pressure_graph_values[i].pressure)), GxEPD_BLACK);
+      display.drawPixel( db_graph_values[i].x , (80 + 2*(1030 - db_graph_values[i].pressure)), GxEPD_BLACK);
     }
 
   }

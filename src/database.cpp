@@ -5,7 +5,7 @@ SPIClass _spiSD(HSPI);
 sqlite3 *dbconn;
 
 db_hourly_value db_hourly_values[HOURLY_VALUES];
-db_pressure_graph_value db_pressure_graph_values[GRAPH_VALUES];
+db_graph_value db_graph_values[GRAPH_VALUES];
 
 void config_get() {
   
@@ -146,10 +146,12 @@ void db_fetchData() {
     db_hourly_values[i].chg_pressure = 0;
   }
 
-  for (int i=0; i < UBOUND(db_pressure_graph_values); i++){
-    db_pressure_graph_values[i].x = 0;
-    db_pressure_graph_values[i].pressure = 0;
-    db_pressure_graph_values[i].timestamp = 0;
+  for (int i=0; i < UBOUND(db_graph_values); i++){
+    db_graph_values[i].x = 0;
+    db_graph_values[i].temperature = 0;
+    db_graph_values[i].pressure = 0;
+    db_graph_values[i].humidity = 0;
+    db_graph_values[i].timestamp = 0;
   }
 
   sprintf(sqlbuffer, "SELECT max(gmtimestamp) FROM t_datalog;");
@@ -170,7 +172,7 @@ void db_fetchData() {
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
   sprintf(sqlbuffer, 
-      "SELECT 200-((%ld - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, pressure, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - 24*3600) ORDER BY gmtimestamp ASC LIMIT 2000;",
+      "SELECT 200-((%ld - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, temperature, pressure, humidity, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - 24*3600) ORDER BY gmtimestamp ASC LIMIT 2000;",
       current_timestamp,
       current_timestamp,
       current_timestamp);
@@ -184,11 +186,13 @@ void db_fetchData() {
   }
 
   while (sqlite3_step(res1) == SQLITE_ROW) {
-    Serial.printf("id (x): %d, tst: %d, tstoffset: %d \n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1), sqlite3_column_int(res1, 3));
+    Serial.printf("id (x): %d, tst: %d, tstoffset: %d \n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1), sqlite3_column_int(res1, 5));
 
-    db_pressure_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
-    db_pressure_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
-    db_pressure_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 2);
+    db_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
+    db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
+    db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 2);
+    db_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 3);
+    db_graph_values[ sqlite3_column_int(res1, 0) ].humidity = sqlite3_column_double(res1, 4);
   }
   sqlite3_finalize(res1);
 

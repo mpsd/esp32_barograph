@@ -98,12 +98,14 @@ struct db_hourly_value {
 extern db_hourly_value db_hourly_values[HOURLY_VALUES];
 
 
-struct db_pressure_graph_value {
+struct db_graph_value {
   uint16_t x;
+  float_t temperature;
   float_t pressure;
+  float_t humidity;
   uint64_t timestamp;
 };
 #define GRAPH_VALUES 201
-extern db_pressure_graph_value db_pressure_graph_values[GRAPH_VALUES];
+extern db_graph_value db_graph_values[GRAPH_VALUES];
 
 #endif

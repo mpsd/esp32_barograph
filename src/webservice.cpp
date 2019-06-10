@@ -40,10 +40,15 @@ void webserver_initialize() {
         response->print("<polyline points=\"0,0 400,0\" /><polyline points=\"0,80 400,80\" /><polyline points=\"0,160 400,160\" />");
         response->print("<polyline points=\"0,240 400,240\" /><polyline points=\"0,320 400,320\" /><polyline points=\"0,400 400,400\" />");
         response->print("<polyline points=\"200,0 200,400\" /><polyline points=\"300,0 300,400\" /><polyline points=\"350,0 350,400\" /><polyline points=\"400,0 400,400\" /></g>");
-        response->print("<text x=\"5\" y=\"75\" style=\"fill:red;\">1020<tspan x=\"5\" y=\"235\">1000</tspan><tspan x=\"5\" y=\"395\">980</tspan></text>");
+        response->print("<text x=\"5\" y=\"75\" style=\"fill:red;\">1020 hPa<tspan x=\"5\" y=\"235\">1000 hPa</tspan><tspan x=\"5\" y=\"395\">980 hPa</tspan></text>");
         response->print("<g fill=\"none\" stroke=\"red\" stroke-width=\"2\"><polyline points=\"");
-        for (int i=0; i < UBOUND(db_pressure_graph_values); i++) {
-            if (db_pressure_graph_values[i].pressure > 0) response->printf("%d,%0.0f ", 2*i, 8*(1030 - db_pressure_graph_values[i].pressure));
+        for (int i=0; i < UBOUND(db_graph_values); i++) {
+            if (db_graph_values[i].pressure > 0) response->printf("%d,%0.0f ", 2*i, 8*(1030 - db_graph_values[i].pressure));
+        }
+        response->print("\" /></g>");
+        response->print("<g fill=\"none\" stroke=\"blue\" stroke-width=\"2\"><polyline points=\"");
+        for (int i=0; i < UBOUND(db_graph_values); i++) {
+            if (db_graph_values[i].temperature > 0) response->printf("%d,%0.0f ", 2*i, 8*(25 - bme280_getDewPoint(db_graph_values[i].humidity, db_graph_values[i].temperature)));
         }
         response->print("\" /></g>");
         response->print("</svg>");
