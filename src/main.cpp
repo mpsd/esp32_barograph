@@ -41,20 +41,20 @@ void setup(void)
   DEBUG_PRINT("load config from file");
   config_get();
 
-  DEBUG_PRINT("initialize DB");
-  db_fetchData();
-  
+  DEBUG_PRINT("initialize RTC DS3231");
+  ds3231_initialize();
+
   DEBUG_PRINT("initialize BME280");
   bme280_initialize();
-  
+
+  DEBUG_PRINT("initialize DB");
+  db_fetchData();
+    
   DEBUG_PRINT("initialize ePaper");
   display_update();
 
   DEBUG_PRINT("initialize GPS");
   gps_initialize();
-
-  DEBUG_PRINT("initialize RTC DS3231");
-  ds3231_initialize();
 
   DEBUG_PRINT("start webserver");
   webserver_initialize();
@@ -99,10 +99,10 @@ void loop()
   // sync RTC once per hour to GPS time
   if ( ( ds3231_getEpoch() - CONFIG.RTCSyncInterval >= lastRTCSync ) && (gps_DateTimeIsValid()) ) {
       DEBUG_PRINT("Resync RTC to GPS");
+      lastRTCSync = ds3231_getEpoch();
       gps_delay(2000);                    // get most recent values
       if (gps_DateTimeIsValid()) {
         ds3231_setDateTime( gps_getEpoch() );
-        lastRTCSync = ds3231_getEpoch();
       }
   }
   

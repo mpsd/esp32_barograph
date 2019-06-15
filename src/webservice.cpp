@@ -23,7 +23,7 @@ void webserver_initialize() {
 
         response->print("Client ");
         response->print(request->client()->remoteIP());
-        response->printf(" / system uptime: %02lu:%02lu.%02lu<br>", (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
+        response->printf(" / system uptime: %02lu days %02lu:%02lu.%02lu<br>", (millis()/1000/60/60/24), (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
         
         response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
         response->printf("RTC: %02u:%02u:%02u %02u/%02u/%04u<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
