@@ -134,7 +134,7 @@ void db_fetchData() {
   sqlite3_stmt *res1;
   char sqlbuffer[SQLBUFFSIZE];
 
-  time_t current_timestamp = 0;
+  uint64_t current_timestamp = 0;
   
   DEBUG_PRINT("Reset variables");
 
@@ -154,25 +154,11 @@ void db_fetchData() {
     db_graph_values[i].timestamp = 0;
   }
 
-  sprintf(sqlbuffer, "SELECT max(gmtimestamp) FROM t_datalog;");
-  DEBUG_PRINT(sqlbuffer);
-  
-  error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
-  if ( error != SQLITE_OK ) {
-    DEBUG_PRINT("No data found");
-    DEBUG_PRINT(sqlite3_errstr(error));
-    sqlite3_finalize(res1);
-    db_close();
-    return;
-  }
-  while (sqlite3_step(res1) == SQLITE_ROW) {
-    current_timestamp = sqlite3_column_int(res1, 0);
-  }
-  sqlite3_finalize(res1);
+  current_timestamp = ds3231_getEpoch();
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
   sprintf(sqlbuffer, 
-      "SELECT 200-((%ld - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, temperature, pressure, humidity, (%ld - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%ld - 24*3600) ORDER BY gmtimestamp ASC LIMIT 2000;",
+      "SELECT 200-((%llu - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, temperature, pressure, humidity, (%llu - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%llu - 24*3600) ORDER BY gmtimestamp ASC LIMIT 2000;",
       current_timestamp,
       current_timestamp,
       current_timestamp);
@@ -199,7 +185,7 @@ void db_fetchData() {
 
   DEBUG_PRINT("Retrieve hourly data");
   sprintf(sqlbuffer,
-      "SELECT abs(%ld - gmtimestamp)/3600 as id, temperature, humidity, pressure, gmtimestamp, abs(%ld - gmtimestamp)%%3600 as timestampoffset FROM t_datalog WHERE timestampoffset < 300 ORDER BY id ASC, timestampoffset DESC LIMIT 100;",
+      "SELECT abs(%llu - gmtimestamp)/3600 as id, temperature, humidity, pressure, gmtimestamp, abs(%llu - gmtimestamp)%%3600 as timestampoffset FROM t_datalog WHERE timestampoffset < 300 ORDER BY id ASC, timestampoffset DESC LIMIT 100;",
       current_timestamp,
       current_timestamp);
   DEBUG_PRINT(sqlbuffer);

@@ -2,6 +2,7 @@
 #define DATABASE_H
 
 #include "tools.h"
+#include "ds3231.h"
 
 #include <sqlite3.h>
 // builtin libraries
