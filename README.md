@@ -6,8 +6,6 @@ Platformio project to have a barograph with
 - BME280 Sensor
 - uBlox GPS Neo 6
 - SD card board storing an sqlite db with the history data
-
-- DS3231 Realtime clock (archived and replaced by GPS, see folder archive)
-
+- DS3231 Realtime clock (synced once per day to GPS time)
 
 work in progress...
