@@ -30,10 +30,10 @@ void webserver_initialize() {
         response->printf("GPS: %02u:%02u:%02u %02u/%02u/%04u (%s)<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear(), (gps_DateTimeIsValid() ? "valid" : "invalid") );
         response->print("<h3>Climate data</h3>");
         for (int i=0; i < UBOUND(db_hourly_values); i++) {
-            response->printf("%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dew %2.1fC<br>", 
-            i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
+            response->printf("%dh - %s: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
+            i, ds3231_getTimeFormatted( db_hourly_values[i].timestamp ), db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
         }
-        response->printf("<br>Dewpoint: %+4.1fC<br>", bme280_getDewPoint());
+        response->printf("<br>Current dewpoint: %+4.1fC<br>", bme280_getDewPoint());
 
         response->print("<svg height=\"400\" width=\"400\">");
         response->print("<g stroke-dasharray=\"1,1\" fill=\"none\" stroke=\"black\" stroke-width=\"1\">");
@@ -55,16 +55,17 @@ void webserver_initialize() {
         response->print("</svg>");
   
         response->print("<h3>GPS data</h3>");
-        response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat: %08.6f, Lon: %08.6f<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
+        response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f - Lat/Lon (Deg MM.MM): %s / %s<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
             gps_getSatellites(),
             gps_getHDOP(),
             gps_getLat(),
             gps_getLon(),
+            gps_DecimalToDegreeMinutes(gps_getLat()),
+            gps_DecimalToDegreeMinutes(gps_getLon()),
             gps_getAltitude(),
             gps_getCourse(),
             gps_getSpeed() );
-        response->printf( "<br>Lat/Lon (Deg MM.MM): %s / %s<br>", gps_DecimalToDegreeMinutes(gps_getLat()), gps_DecimalToDegreeMinutes(gps_getLon()));
-        
+
         response->print("<h2>Current Config</h2>");
         response->print("<form action=\"/configsave\" method=\"post\">");
         response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);

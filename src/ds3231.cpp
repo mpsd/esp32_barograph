@@ -121,3 +121,15 @@ tm * ds3231_getLocalNow() {
     time_t rawtime = (time_t)ds3231_getEpoch() + (time_t)(CONFIG.TZOffset * 3600);
     return gmtime( &rawtime );
 }
+
+char * ds3231_getTimeFormatted(uint64_t tst) {
+    char * retval = new char[20];
+    time_t rawtime = (time_t)tst  + (time_t)(CONFIG.TZOffset * 3600);
+    tm * structime;
+
+    structime = gmtime( &rawtime );
+
+    sprintf(retval, "%02d:%02d.%02d", structime->tm_hour, structime->tm_min, structime->tm_sec);
+
+    return retval;
+}
