@@ -23,7 +23,7 @@ void webserver_initialize() {
         response->printf(" / system uptime: %02lu days %02lu:%02lu.%02lu<br>", (millis()/1000/60/60/24), (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
         
         response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
-        response->printf("RTC: %02u:%02u:%02u %02u/%02u/%04u<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
+        response->printf("RTC: %02u:%02u:%02u %02u/%02u/%04u (%s)<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear(), (ds3231_IsValid() ? "valid" : "invalid") );
         response->printf("GPS: %02u:%02u:%02u %02u/%02u/%04u (%s)<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear(), (gps_DateTimeIsValid() ? "valid" : "invalid") );
         response->print("<h3>Climate data</h3>");
         for (int i=0; i < UBOUND(db_hourly_values); i++) {

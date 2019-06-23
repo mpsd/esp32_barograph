@@ -96,6 +96,7 @@ void loop()
     // maybe this helps with GPS location lost
     if ( ! gps_LocationIsValid() ) {
       gps_close();
+      delay(1000);
       gps_initialize();
     }
   }
@@ -104,21 +105,24 @@ void loop()
 
   // sync RTC to GPS time
   if ( ( ds3231_getEpoch() - CONFIG.RTCSyncInterval >= lastRTCSync ) && (gps_DateTimeIsValid()) ) {
-      DEBUG_PRINT("Resync RTC to GPS");
+      DEBUG_PRINT("Regular sync RTC to GPS");
       lastRTCSync = ds3231_getEpoch();
       gps_delay(2000);                    // get most recent values
-      if (gps_DateTimeIsValid()) {
-        ds3231_setDateTime( gps_getEpoch() );
-      }
+      ds3231_setDateTime( gps_getEpoch() );
+  }
+
+  if ( (gps_getHDOP() < 10.0F) && ( gps_DateTimeIsValid() ) && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) ) {
+      DEBUG_PRINT("RTC more than 10s off - resync RTC to GPS");
+      gps_delay(2000);                    // get most recent values
+      ds3231_setDateTime( gps_getEpoch() );
   }
   
-  
-  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu\n", ds3231_getDayOfMonth(), \
+  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s)\n", ds3231_getDayOfMonth(), \
     ds3231_getMonth(),     \
     ds3231_getYear(),      \
     ds3231_getHour(),      \
     ds3231_getMinute(),    \
     ds3231_getSecond(),    \
-    ds3231_getEpoch() );  
-
+    ds3231_getEpoch(),     \
+    (ds3231_IsValid() ? "valid" : "invalid") );  
 }
