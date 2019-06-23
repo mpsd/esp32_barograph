@@ -43,6 +43,7 @@ void setup(void)
 
   DEBUG_PRINT("initialize RTC DS3231");
   ds3231_initialize();
+  if ( ds3231_IsValid() ) lastRTCSync = ds3231_getEpoch();
 
   DEBUG_PRINT("initialize BME280");
   bme280_initialize();
@@ -68,6 +69,7 @@ void loop()
   
   if ( ds3231_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
+    lastDataUpdate = ds3231_getEpoch();
     db_pushData( gps_getLat(),
         gps_getLon(),
         gps_getAltitude(),
@@ -84,7 +86,6 @@ void loop()
         bme280_getPressure(),
         bme280_getAltitude(),
         ds3231_getEpoch() );
-    lastDataUpdate = ds3231_getEpoch();
   }
 
   if (( ds3231_getMinute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
@@ -92,11 +93,16 @@ void loop()
     lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
     db_fetchData();
     display_update();
+    // maybe this helps with GPS location lost
+    if ( ! gps_LocationIsValid() ) {
+      gps_close();
+      gps_initialize();
+    }
   }
   
   gps_delay(1000);
 
-  // sync RTC once per hour to GPS time
+  // sync RTC to GPS time
   if ( ( ds3231_getEpoch() - CONFIG.RTCSyncInterval >= lastRTCSync ) && (gps_DateTimeIsValid()) ) {
       DEBUG_PRINT("Resync RTC to GPS");
       lastRTCSync = ds3231_getEpoch();

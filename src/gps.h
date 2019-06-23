@@ -22,6 +22,7 @@
     gps_getEpoch() );   
 
 void gps_initialize();
+void gps_close();
 void gps_delay(unsigned long ms);
 
 bool gps_LocationIsValid();

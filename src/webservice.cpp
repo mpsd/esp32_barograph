@@ -1,9 +1,6 @@
 #include <Arduino.h>
 #include "webservice.h"
 
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-
 #define FORM_ALTITUDE "alt"
 #define FORM_TZOFFSET "tzo"
 #define FORM_TEMPOFFSET "tempofst"
@@ -55,7 +52,7 @@ void webserver_initialize() {
         response->print("</svg>");
   
         response->print("<h3>GPS data</h3>");
-        response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f - Lat/Lon (Deg MM.MM): %s / %s<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
+        response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f<br>Lat/Lon (Deg MM.MM): %s / %s<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
             gps_getSatellites(),
             gps_getHDOP(),
             gps_getLat(),

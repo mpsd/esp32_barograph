@@ -14,6 +14,12 @@ void gps_initialize() {
     DEBUG_PRINT("GPS initialized");
 }
 
+void gps_close() {
+    DEBUG_PRINT("close GPS");
+    _UARTGPS.flush();
+    _UARTGPS.end();
+}
+
 void gps_delay( unsigned long ms ) {
     unsigned long start = millis();
     do 
