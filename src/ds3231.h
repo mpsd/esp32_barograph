@@ -22,8 +22,6 @@ uint8_t ds3231_getDayOfMonth();
 uint8_t ds3231_getMonth();
 uint16_t ds3231_getYear();
 
-tm * ds3231_getLocalNow(); // private function used internally to handle timezone
-
-char * ds3231_getTimeFormatted(uint64_t tst);
+RtcDateTime ds3231_getLocalNow(); // private function used internally to handle timezone
 
 #endif

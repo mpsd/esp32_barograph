@@ -61,7 +61,9 @@ void ds3231_initialize() {
 }
 
 void ds3231_setDateTime(RtcDateTime now) {
+    Rtc.SetIsRunning(false);
     Rtc.SetDateTime( now );
+    Rtc.SetIsRunning(true);
 
     RtcDateTime dt = Rtc.GetDateTime();
     char datestring[40];
@@ -79,7 +81,8 @@ void ds3231_setDateTime(RtcDateTime now) {
 }
 
 void ds3231_setDateTime(uint64_t tst) {
-    RtcDateTime now = RtcDateTime(  (uint32_t)(tst - 946684800ULL) );
+    RtcDateTime now;
+    now.InitWithEpoch64Time( tst );
     ds3231_setDateTime( now );
 }
 
@@ -89,47 +92,36 @@ bool ds3231_IsValid() {
 
 uint64_t ds3231_getEpoch() {
     RtcDateTime now = Rtc.GetDateTime();
-    return now.Epoch64Time();
+    return (ds3231_IsValid() ? now.Epoch64Time() : 0);
 }
 
 uint8_t ds3231_getHour() {
-    return (uint8_t)ds3231_getLocalNow()->tm_hour;
+    return ds3231_getLocalNow().Hour();
 }
 
 uint8_t ds3231_getMinute() {
-    return (uint8_t)ds3231_getLocalNow()->tm_min;
+    return ds3231_getLocalNow().Minute();
 }
 
 uint8_t ds3231_getSecond() {
-    return (uint8_t)ds3231_getLocalNow()->tm_sec;
+    return ds3231_getLocalNow().Second();
 }
 
 uint8_t ds3231_getDayOfMonth() {
-    return (uint8_t)ds3231_getLocalNow()->tm_mday;
+    return ds3231_getLocalNow().Day();
 }
 
 uint8_t ds3231_getMonth() {
-    return (uint8_t)ds3231_getLocalNow()->tm_mon + 1;
+    return ds3231_getLocalNow().Month();
 }
 
 uint16_t ds3231_getYear() {
-    return (uint16_t)ds3231_getLocalNow()->tm_year + 1900;
+    return ds3231_getLocalNow().Year();
 }
 
-/* private functions, epoch style tm structures (after 01/01/1900) */
-tm * ds3231_getLocalNow() {
-    time_t rawtime = (time_t)ds3231_getEpoch() + (time_t)(CONFIG.TZOffset * 3600);
-    return gmtime( &rawtime );
-}
-
-char * ds3231_getTimeFormatted(uint64_t tst) {
-    char * retval = new char[20];
-    time_t rawtime = (time_t)tst  + (time_t)(CONFIG.TZOffset * 3600);
-    tm * structime;
-
-    structime = gmtime( &rawtime );
-
-    sprintf(retval, "%02d:%02d.%02d", structime->tm_hour, structime->tm_min, structime->tm_sec);
-
-    return retval;
+/* private functions to apply timezoneoffset */
+RtcDateTime ds3231_getLocalNow() {
+    RtcDateTime now = Rtc.GetDateTime();
+    now+=(uint32_t)(CONFIG.TZOffset * 3600);
+    return now;
 }

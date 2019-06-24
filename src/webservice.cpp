@@ -14,7 +14,7 @@ void webserver_initialize() {
         response->addHeader("Server","ESP Async Web Server");
         response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
         response->print("<meta http-equiv=\"refresh\" content=\"20\" />");
-        response->printf("<title>Webpage at %s</title>", request->url().c_str());
+        response->printf("<title>esplogger %s</title>", request->url().c_str());
         response->print("<style> body { font: normal 12px Verdana, Arial, sans-serif; }</style>");
         response->print("</head><body>");
 
@@ -24,11 +24,11 @@ void webserver_initialize() {
         
         response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
         response->printf("RTC: %02u:%02u:%02u %02u/%02u/%04u (%s)<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear(), (ds3231_IsValid() ? "valid" : "invalid") );
-        response->printf("GPS: %02u:%02u:%02u %02u/%02u/%04u (%s)<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear(), (gps_DateTimeIsValid() ? "valid" : "invalid") );
+        response->printf("GPS: %02u:%02u:%02u %02u/%02u/%04u<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear());
         response->print("<h3>Climate data</h3>");
         for (int i=0; i < UBOUND(db_hourly_values); i++) {
-            response->printf("%dh - %s: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
-            i, ds3231_getTimeFormatted( db_hourly_values[i].timestamp ), db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
+            response->printf("%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
+            i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
         }
         response->printf("<br>Current dewpoint: %+4.1fC<br>", bme280_getDewPoint());
 

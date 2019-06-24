@@ -33,11 +33,11 @@ void gps_delay( unsigned long ms ) {
 }
 
 bool gps_LocationIsValid() {
-    return gps.location.isValid();
+    return ( gps.location.isValid() && (gps.location.age() < 2000) );
 }
 
 bool gps_DateTimeIsValid() {
-    return ( gps.date.isValid() && gps.time.isValid() );
+    return ( gps.date.isValid() && gps.time.isValid() && (gps.date.age() < 2000) && (gps.time.age() < 2000) );
 }
 
 uint32_t gps_getSatellites() {

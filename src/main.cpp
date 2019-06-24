@@ -17,7 +17,6 @@ config_param CONFIG;
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
 uint64_t lastDisplayUpdate = 946684800ULL;
 uint64_t lastDataUpdate = 946684800ULL;
-uint64_t lastRTCSync = 946684800ULL;
 
 /*****************************************( Setup )****************************************/
 
@@ -43,8 +42,7 @@ void setup(void)
 
   DEBUG_PRINT("initialize RTC DS3231");
   ds3231_initialize();
-  if ( ds3231_IsValid() ) lastRTCSync = ds3231_getEpoch();
-
+  
   DEBUG_PRINT("initialize BME280");
   bme280_initialize();
 
@@ -103,15 +101,7 @@ void loop()
   
   gps_delay(1000);
 
-  // sync RTC to GPS time
-  if ( ( ds3231_getEpoch() - CONFIG.RTCSyncInterval >= lastRTCSync ) && (gps_DateTimeIsValid()) ) {
-      DEBUG_PRINT("Regular sync RTC to GPS");
-      lastRTCSync = ds3231_getEpoch();
-      gps_delay(2000);                    // get most recent values
-      ds3231_setDateTime( gps_getEpoch() );
-  }
-
-  if ( (gps_getHDOP() < 10.0F) && ( gps_DateTimeIsValid() ) && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) ) {
+  if ( gps_DateTimeIsValid() && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) ) {
       DEBUG_PRINT("RTC more than 10s off - resync RTC to GPS");
       gps_delay(2000);                    // get most recent values
       ds3231_setDateTime( gps_getEpoch() );
