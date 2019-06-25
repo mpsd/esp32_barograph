@@ -9,7 +9,7 @@
 void ds3231_initialize();
 
 void ds3231_setDateTime(RtcDateTime now);
-void ds3231_setDateTime(uint64_t tst);
+void ds3231_setDateTimeEpoch(uint64_t tst);
 
 bool ds3231_IsValid();
 

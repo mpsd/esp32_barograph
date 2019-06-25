@@ -4,6 +4,8 @@
 TinyGPSPlus gps;
 HardwareSerial _UARTGPS(1); // 1 is used internally, however pins are set in ...begin()
 
+#define TIMEOUTMS 2000
+
 void gps_initialize() {
     _UARTGPS.begin( CONFIG.GPSBaud, SERIAL_8N1, _gps_rx, _gps_tx);
     while ( ! _UARTGPS.available() ) {
@@ -33,15 +35,15 @@ void gps_delay( unsigned long ms ) {
 }
 
 bool gps_LocationIsValid() {
-    return ( gps.location.isValid() && (gps.location.age() < 2000) );
+    return ( gps.location.isValid() && (gps.location.age() < TIMEOUTMS) );
 }
 
 bool gps_DateTimeIsValid() {
-    return ( gps.date.isValid() && gps.time.isValid() && (gps.date.age() < 2000) && (gps.time.age() < 2000) );
+    return ( gps.date.isValid() && gps.time.isValid() && (gps.date.age() < TIMEOUTMS) && (gps.time.age() < TIMEOUTMS) );
 }
 
 uint32_t gps_getSatellites() {
-    if ( gps.satellites.isValid() ) {
+    if ( gps.satellites.isValid() && (gps.satellites.age() < TIMEOUTMS) ) {
         return gps.satellites.value();
     } else {
         return 0U;
@@ -49,7 +51,7 @@ uint32_t gps_getSatellites() {
 }
 
 float_t gps_getHDOP() {
-    if ( gps.hdop.isValid() ) {
+    if ( gps.hdop.isValid() && (gps.hdop.age() < TIMEOUTMS) ) {
         return gps.hdop.hdop();
     } else {
         return 0.0F;
@@ -57,7 +59,7 @@ float_t gps_getHDOP() {
 }
 
 float_t gps_getLat() {
-    if ( gps.location.isValid() ) {
+    if ( gps_LocationIsValid() ) {
         return gps.location.lat();
     } else {
         return 0.0F;
@@ -65,7 +67,7 @@ float_t gps_getLat() {
 }
 
 float_t gps_getLon() {
-    if ( gps.location.isValid() ) {
+    if ( gps_LocationIsValid() ) {
         return gps.location.lng();
     } else {
         return 0.0F;
@@ -73,7 +75,7 @@ float_t gps_getLon() {
 }
 
 float_t gps_getAltitude() {
-    if ( gps.altitude.isValid() ) {
+    if ( gps.altitude.isValid() && (gps.altitude.age() < TIMEOUTMS) ) {
         return gps.altitude.meters();
     } else {
         return 0.0F;
@@ -81,7 +83,7 @@ float_t gps_getAltitude() {
 }
 
 float_t gps_getCourse() {
-    if ( gps.course.isValid() ) {
+    if ( gps.course.isValid() && (gps.course.age() < TIMEOUTMS) ) {
         return gps.course.deg();
     } else {
         return 0.0F;
@@ -89,7 +91,7 @@ float_t gps_getCourse() {
 }
 
 float_t gps_getSpeed() {
-    if ( gps.speed.isValid() ) {
+    if ( gps.speed.isValid() && (gps.speed.age() < TIMEOUTMS) ) {
         return gps.speed.mps();
     } else {
         return 0.0F;

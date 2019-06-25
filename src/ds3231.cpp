@@ -80,7 +80,7 @@ void ds3231_setDateTime(RtcDateTime now) {
     DEBUG_PRINT(datestring);
 }
 
-void ds3231_setDateTime(uint64_t tst) {
+void ds3231_setDateTimeEpoch(uint64_t tst) {
     RtcDateTime now;
     now.InitWithEpoch64Time( tst );
     ds3231_setDateTime( now );
@@ -92,7 +92,7 @@ bool ds3231_IsValid() {
 
 uint64_t ds3231_getEpoch() {
     RtcDateTime now = Rtc.GetDateTime();
-    return (ds3231_IsValid() ? now.Epoch64Time() : 0);
+    return (Rtc.IsDateTimeValid() ? now.Epoch64Time() : 0);
 }
 
 uint8_t ds3231_getHour() {
@@ -119,9 +119,10 @@ uint16_t ds3231_getYear() {
     return ds3231_getLocalNow().Year();
 }
 
-/* private functions to apply timezoneoffset */
+/* private function to apply timezoneoffset */
 RtcDateTime ds3231_getLocalNow() {
-    RtcDateTime now = Rtc.GetDateTime();
-    now+=(uint32_t)(CONFIG.TZOffset * 3600);
+    RtcDateTime now;
+    now.InitWithEpoch64Time( ds3231_getEpoch() );
+    now+=(uint32_t)(CONFIG.TZOffset * 3600); 
     return now;
 }

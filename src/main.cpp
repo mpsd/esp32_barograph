@@ -104,7 +104,7 @@ void loop()
   if ( gps_DateTimeIsValid() && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) ) {
       DEBUG_PRINT("RTC more than 10s off - resync RTC to GPS");
       gps_delay(2000);                    // get most recent values
-      ds3231_setDateTime( gps_getEpoch() );
+      ds3231_setDateTimeEpoch( gps_getEpoch() );
   }
   
   Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s)\n", ds3231_getDayOfMonth(), \
