@@ -6,53 +6,47 @@
 #define FORM_TEMPOFFSET "tempofst"
 
 AsyncWebServer webserver(80);
+char index_html[INDEX_HTML_LEN];
 
-void webserver_initialize() {
+void create_index_html() {
 
-    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        AsyncResponseStream *response = request->beginResponseStream("text/html");
-        response->addHeader("Server","ESP Async Web Server");
-        response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
-        response->print("<meta http-equiv=\"refresh\" content=\"20\" />");
-        response->printf("<title>esplogger %s</title>", request->url().c_str());
-        response->print("<style> body { font: normal 12px Verdana, Arial, sans-serif; }</style>");
-        response->print("</head><body>");
+    int index = snprintf(index_html, INDEX_HTML_LEN, "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"refresh\" content=\"30\" /><title>esplogger</title><style> body { font: normal 12px Verdana, Arial, sans-serif; }</style></head><body>");
 
-        response->print("Client ");
-        response->print(request->client()->remoteIP());
-        response->printf(" / system uptime: %02lu days %02lu:%02lu.%02lu<br>", (millis()/1000/60/60/24), (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
-        
-        response->printf("<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
-        response->printf("RTC: %02u:%02u:%02u %02u/%02u/%04u (%s)<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear(), (ds3231_IsValid() ? "valid" : "invalid") );
-        response->printf("GPS: %02u:%02u:%02u %02u/%02u/%04u<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear());
-        response->print("<h3>Climate data</h3>");
-        for (int i=0; i < UBOUND(db_hourly_values); i++) {
-            response->printf("%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "system uptime: %02lu days %02lu:%02lu.%02lu<br>", (millis()/1000/60/60/24), (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);
+
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<h2>Current Values at %02u:%02u:%02u on %02u/%02u/%04u</h2>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear() );
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "RTC: %02u:%02u:%02u %02u/%02u/%04u<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear());
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "GPS: %02u:%02u:%02u %02u/%02u/%04u<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear());
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<h3>Climate data</h3>");
+    
+    for (int i=0; i < UBOUND(db_hourly_values); i++) {
+        index += snprintf(index_html+index, INDEX_HTML_LEN-index, "%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
             i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
-        }
-        response->printf("<br>Current dewpoint: %+4.1fC<br>", bme280_getDewPoint());
+    }
+    
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<br>Current dewpoint: %+4.1fC<br>", bme280_getDewPoint());
 
-        response->print("<svg height=\"400\" width=\"400\">");
-        response->print("<g stroke-dasharray=\"1,1\" fill=\"none\" stroke=\"black\" stroke-width=\"1\">");
-        response->print("<polyline points=\"0,0 400,0\" /><polyline points=\"0,80 400,80\" /><polyline points=\"0,160 400,160\" />");
-        response->print("<polyline points=\"0,240 400,240\" /><polyline points=\"0,320 400,320\" /><polyline points=\"0,400 400,400\" />");
-        response->print("<polyline points=\"200,0 200,400\" /><polyline points=\"300,0 300,400\" /><polyline points=\"350,0 350,400\" /><polyline points=\"400,0 400,400\" /></g>");
-        response->print("<text x=\"5\" y=\"75\" style=\"fill:red;\">1020 hPa<tspan x=\"5\" y=\"235\">1000 hPa</tspan><tspan x=\"5\" y=\"395\">980 hPa</tspan></text>");
-        response->print("<text x=\"5\" y=\"95\" style=\"fill:blue;\">20 C<tspan x=\"5\" y=\"175\">15 C</tspan><tspan x=\"5\" y=\"255\">10 C</tspan><tspan x=\"5\" y=\"335\">5 C</tspan></text>");
-        response->print("<g fill=\"none\" stroke=\"red\" stroke-width=\"2\"><polyline points=\"");
-        for (int i=0; i < UBOUND(db_graph_values); i++) {
-            if (db_graph_values[i].pressure > 0) response->printf("%d,%0.0f ", 2*i, 8*(1030 - db_graph_values[i].pressure));
-        }
-        response->print("\" /></g>");
-        response->print("<g fill=\"none\" stroke=\"blue\" stroke-width=\"2\"><polyline points=\"");
-        for (int i=0; i < UBOUND(db_graph_values); i++) {
-            if (db_graph_values[i].temperature > 0) response->printf("%d,%0.0f ", 2*i, 16*(25 - bme280_getDewPoint(db_graph_values[i].humidity, db_graph_values[i].temperature)));
-        }
-        response->print("\" /></g>");
-        response->print("</svg>");
-  
-        response->print("<h3>GPS data</h3>");
-        response->printf( "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f<br>Lat/Lon (Deg MM.MM): %s / %s<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<svg height=\"400\" width=\"400\">");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<g stroke-dasharray=\"1,1\" fill=\"none\" stroke=\"black\" stroke-width=\"1\">");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<polyline points=\"0,0 400,0\" /><polyline points=\"0,80 400,80\" /><polyline points=\"0,160 400,160\" />");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<polyline points=\"0,240 400,240\" /><polyline points=\"0,320 400,320\" /><polyline points=\"0,400 400,400\" />");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<polyline points=\"200,0 200,400\" /><polyline points=\"300,0 300,400\" /><polyline points=\"350,0 350,400\" /><polyline points=\"400,0 400,400\" /></g>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<text x=\"5\" y=\"75\" style=\"fill:red;\">1020 hPa<tspan x=\"5\" y=\"235\">1000 hPa</tspan><tspan x=\"5\" y=\"395\">980 hPa</tspan></text>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<text x=\"5\" y=\"95\" style=\"fill:blue;\">20 C<tspan x=\"5\" y=\"175\">15 C</tspan><tspan x=\"5\" y=\"255\">10 C</tspan><tspan x=\"5\" y=\"335\">5 C</tspan></text>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<g fill=\"none\" stroke=\"red\" stroke-width=\"2\"><polyline points=\"");
+    for (int i=0; i < UBOUND(db_graph_values); i++) {
+         if (db_graph_values[i].pressure > 0) index += snprintf(index_html+index, INDEX_HTML_LEN-index, "%d,%0.0f ", 2*i, 8*(1030 - db_graph_values[i].pressure));
+    }
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "\" /></g>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<g fill=\"none\" stroke=\"blue\" stroke-width=\"2\"><polyline points=\"");
+    for (int i=0; i < UBOUND(db_graph_values); i++) {
+        if (db_graph_values[i].temperature > 0) index += snprintf(index_html+index, INDEX_HTML_LEN-index, "%d,%0.0f ", 2*i, 16*(25 - bme280_getDewPoint(db_graph_values[i].humidity, db_graph_values[i].temperature)));
+    }
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "\" /></g></svg>");
+
+
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<h3>GPS data</h3>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f<br>Lat/Lon (Deg MM.MM): %s / %s<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
             gps_getSatellites(),
             gps_getHDOP(),
             gps_getLat(),
@@ -63,17 +57,25 @@ void webserver_initialize() {
             gps_getCourse(),
             gps_getSpeed() );
 
-        response->print("<h2>Current Config</h2>");
-        response->print("<form action=\"/configsave\" method=\"post\">");
-        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);
-        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
-        response->printf("<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" step=\"0.1\" value=\"%0.1f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
-        response->print("<button type=\"submit\">Save</button>");
-        response->print("</form>");
-        
-        response->print("</body></html>");
-        //send the response last
-        request->send(response);
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<h2>Current Config</h2>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<form action=\"/configsave\" method=\"post\">");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" step=\"0.1\" value=\"%0.1f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<button type=\"submit\">Save</button>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "</form>");
+    
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "content length: %d</body></html>", index+35);
+    
+    DEBUG_PRINT(index_html);
+}
+
+void webserver_initialize() {
+    
+    create_index_html();
+
+    webserver.on("/", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        request->send_P(200, "text/html", index_html);
     });
 
     webserver.on("/configsave", HTTP_ANY, [](AsyncWebServerRequest *request) {

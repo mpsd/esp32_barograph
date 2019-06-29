@@ -10,6 +10,7 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
+void create_index_html();
 void webserver_initialize();
 
 #endif

@@ -84,6 +84,7 @@ void loop()
         bme280_getPressure(),
         bme280_getAltitude(),
         ds3231_getEpoch() );
+    create_index_html(); 
   }
 
   if (( ds3231_getMinute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
@@ -107,12 +108,13 @@ void loop()
       ds3231_setDateTimeEpoch( gps_getEpoch() );
   }
   
-  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s)\n", ds3231_getDayOfMonth(), \
+  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - Heap: Total %u / Free %u / Max Block %u\n", ds3231_getDayOfMonth(), \
     ds3231_getMonth(),     \
     ds3231_getYear(),      \
     ds3231_getHour(),      \
     ds3231_getMinute(),    \
     ds3231_getSecond(),    \
     ds3231_getEpoch(),     \
-    (ds3231_IsValid() ? "valid" : "invalid") );  
+    (ds3231_IsValid() ? "valid" : "invalid"), \
+    ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMaxAllocHeap() );  
 }

@@ -108,4 +108,7 @@ struct db_graph_value {
 #define GRAPH_VALUES 201
 extern db_graph_value db_graph_values[GRAPH_VALUES];
 
+#define INDEX_HTML_LEN 9000
+extern char index_html[INDEX_HTML_LEN];
+
 #endif
