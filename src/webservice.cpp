@@ -18,14 +18,14 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "RTC: %02u:%02u:%02u %02u/%02u/%04u<br>", ds3231_getHour(), ds3231_getMinute(), ds3231_getSecond(), ds3231_getDayOfMonth(), ds3231_getMonth(), ds3231_getYear());
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "GPS: %02u:%02u:%02u %02u/%02u/%04u<br>", gps_getHour(), gps_getMinute(), gps_getSecond(), gps_getDayOfMonth(), gps_getMonth(), gps_getYear());
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<h3>Climate data</h3>");
-    
+
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Current: %4.0fhPa / %2.0fC / %2.0f%% / dewpoint %2.1fC<br><br>", bme280_getPressure(), bme280_getTemperature(), bme280_getHumidity(), bme280_getDewPoint() ); 
+        
     for (int i=0; i < UBOUND(db_hourly_values); i++) {
         index += snprintf(index_html+index, INDEX_HTML_LEN-index, "%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
             i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
     }
     
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<br>Current dewpoint: %+4.1fC<br>", bme280_getDewPoint());
-
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<svg height=\"400\" width=\"400\">");
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<g stroke-dasharray=\"1,1\" fill=\"none\" stroke=\"black\" stroke-width=\"1\">");
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<polyline points=\"0,0 400,0\" /><polyline points=\"0,80 400,80\" /><polyline points=\"0,160 400,160\" />");
@@ -64,8 +64,8 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" step=\"0.1\" value=\"%0.1f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<button type=\"submit\">Save</button>");
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "</form>");
-    
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "content length: %d</body></html>", index+35);
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Heap: total %u / free %u / max blocksize %u<br>", ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMaxAllocHeap() );
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Content length: %d / %d</body></html>", index+35, INDEX_HTML_LEN);
     
     DEBUG_PRINT(index_html);
 }
