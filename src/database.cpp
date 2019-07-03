@@ -123,6 +123,7 @@ void db_initialize() {
 void db_close() {
   DEBUG_PRINT("close DBfile");  
   sqlite3_close(dbconn);
+  SD.end();
   _spiSD.end();
 }
 

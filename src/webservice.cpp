@@ -117,6 +117,18 @@ void webserver_initialize() {
         config_set();
     });
 
+    webserver.on("/esprestart", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
+        response->printf("<title>Webpage at %s</title>", request->url().c_str());
+        response->print("<style> body {font: normal 10px Verdana, Arial, sans-serif;} </style>");
+        response->print("</head><body>Restarting ESP</body></html>");
+
+        request->send(response);
+
+        ESP.restart();
+    });
+
     webserver.on("/debug", HTTP_ANY, [](AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("text/html");
         response->addHeader("Server","ESP Async Web Server");
