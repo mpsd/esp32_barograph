@@ -80,7 +80,7 @@ struct config_param {
   uint64_t  DisplayUpdateInterval = 300ULL;
   uint64_t  RTCSyncInterval = 86400ULL;
   
-  uint32_t SDSpeed = 27000000U;
+  uint32_t SDSpeed = 25000000U;
   int32_t GPSBaud = 9600;
 
   const char* SQLiteFile = "/sd/datalog.sqlite3";

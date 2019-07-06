@@ -54,7 +54,7 @@ float_t gps_getHDOP() {
     if ( gps.hdop.isValid() && (gps.hdop.age() < TIMEOUTMS) ) {
         return gps.hdop.hdop();
     } else {
-        return 0.0F;
+        return 99.99F;
     }
 }
 

@@ -63,8 +63,8 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" step=\"0.1\" value=\"%0.1f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "<button type=\"submit\">Save</button>");
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "</form>");
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Heap: total %u / free %u / max blocksize %u<br>", ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMaxAllocHeap() );
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "</form><br><form action=\"/esprestart\" method=\"post\"><button type=\"submit\">Restart</button></form><br>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Heap: total %u / free %u / min %u / max blocksize %u<br>", ESP.getHeapSize(), ESP.getFreeHeap(), esp_get_minimum_free_heap_size(), ESP.getMaxAllocHeap() );
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "Content length: %d / %d</body></html>", index+35, INDEX_HTML_LEN);
     
     DEBUG_PRINT(index_html);

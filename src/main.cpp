@@ -108,7 +108,7 @@ void loop()
       ds3231_setDateTimeEpoch( gps_getEpoch() );
   }
   
-  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - Heap: Total %u / Free %u / Max Block %u\n", ds3231_getDayOfMonth(), \
+  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - Heap: Total %u / Free %u / Minimum %u / Max Block %u\n", ds3231_getDayOfMonth(), \
     ds3231_getMonth(),     \
     ds3231_getYear(),      \
     ds3231_getHour(),      \
@@ -116,5 +116,5 @@ void loop()
     ds3231_getSecond(),    \
     ds3231_getEpoch(),     \
     (ds3231_IsValid() ? "valid" : "invalid"), \
-    ESP.getHeapSize(), ESP.getFreeHeap(), ESP.getMaxAllocHeap() );  
+    ESP.getHeapSize(), ESP.getFreeHeap(), esp_get_minimum_free_heap_size(), ESP.getMaxAllocHeap() );  
 }

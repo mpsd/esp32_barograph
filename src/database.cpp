@@ -3,6 +3,7 @@
 
 SPIClass _spiSD(HSPI);
 sqlite3 *dbconn;
+char sqlbuffer[SQLBUFFSIZE];
 
 db_hourly_value db_hourly_values[HOURLY_VALUES];
 db_graph_value db_graph_values[GRAPH_VALUES];
@@ -116,6 +117,7 @@ void db_initialize() {
   if ( sqlite3_open(CONFIG.SQLiteFile, &dbconn) ) {
     DEBUG_PRINT("Unable to open database file - ");
     DEBUG_PRINT(CONFIG.SQLiteFile);
+    DEBUG_PRINT(sqlite3_errmsg(dbconn));
     return;
   }
 }
@@ -134,7 +136,6 @@ void db_fetchData() {
 
   int error = 0;
   sqlite3_stmt *res1;
-  char sqlbuffer[SQLBUFFSIZE];
 
   uint64_t current_timestamp = 0;
   
@@ -226,7 +227,6 @@ void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t s
   db_initialize();
 
   int error = 0;
-  char sqlbuffer[SQLBUFFSIZE];
   
   sprintf(sqlbuffer, 
     "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
