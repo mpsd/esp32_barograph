@@ -2,7 +2,8 @@
 #include "database.h"
 
 SPIClass _spiSD(HSPI);
-sqlite3 *dbconn;
+sqlite3 *dbconn = NULL;
+
 char sqlbuffer[SQLBUFFSIZE];
 
 db_hourly_value db_hourly_values[HOURLY_VALUES];
@@ -110,21 +111,26 @@ void db_initialize() {
     return;
   }
 
+  if (dbconn != NULL)
+    sqlite3_close(dbconn);
+
   DEBUG_PRINT("initialize SQLite3");
   sqlite3_initialize();
 
-  DEBUG_PRINT("open DBfile");  
+  DEBUG_PRINT("open DBfile");
   if ( sqlite3_open(CONFIG.SQLiteFile, &dbconn) ) {
     DEBUG_PRINT("Unable to open database file - ");
     DEBUG_PRINT(CONFIG.SQLiteFile);
     DEBUG_PRINT(sqlite3_errmsg(dbconn));
-    return;
   }
+
 }
 
 void db_close() {
-  DEBUG_PRINT("close DBfile");  
+  DEBUG_PRINT("close DBfile");
+
   sqlite3_close(dbconn);
+
   SD.end();
   _spiSD.end();
 }

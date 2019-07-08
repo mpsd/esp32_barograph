@@ -92,11 +92,18 @@ void loop()
     lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
     db_fetchData();
     display_update();
+
     // maybe this helps with GPS location lost
     if ( ! gps_LocationIsValid() ) {
       gps_close();
       delay(1000);
       gps_initialize();
+    }
+
+    // this avoids SQL out of memory on write
+    if ( esp_get_minimum_free_heap_size() < 4000U ) {
+      DEBUG_PRINT("Min heap too low - restarting");
+      ESP.restart();
     }
   }
   
@@ -115,6 +122,6 @@ void loop()
     ds3231_getMinute(),    \
     ds3231_getSecond(),    \
     ds3231_getEpoch(),     \
-    (ds3231_IsValid() ? "valid" : "invalid"), \
+    ( ds3231_IsValid() ? "valid" : "invalid" ), \
     ESP.getHeapSize(), ESP.getFreeHeap(), esp_get_minimum_free_heap_size(), ESP.getMaxAllocHeap() );  
 }

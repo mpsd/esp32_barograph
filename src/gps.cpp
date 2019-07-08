@@ -99,35 +99,36 @@ float_t gps_getSpeed() {
 }
 
 uint16_t gps_getYear() {
-    return (uint16_t)gps_getLocalNow()->tm_year + 1900; // epoch style correction
+    return (uint16_t)gps_getLocalNow().tm_year + 1900; // epoch style correction
 }
 
 uint8_t gps_getMonth() {
-    return (uint8_t)gps_getLocalNow()->tm_mon + 1;      // tm_mon starts with 0
+    return (uint8_t)gps_getLocalNow().tm_mon + 1;      // tm_mon starts with 0
 }
 
 uint8_t gps_getDayOfMonth() {
-    return (uint8_t)gps_getLocalNow()->tm_mday;
+    return (uint8_t)gps_getLocalNow().tm_mday;
 }
 
 uint8_t gps_getHour() {
-    return (uint8_t)gps_getLocalNow()->tm_hour;
+    return (uint8_t)gps_getLocalNow().tm_hour;
 }
 
 uint8_t gps_getMinute() {
-    return (uint8_t)gps_getLocalNow()->tm_min;
+    return (uint8_t)gps_getLocalNow().tm_min;
 }
 
 uint8_t gps_getSecond() {
-    return (uint8_t)gps_getLocalNow()->tm_sec;
+    return (uint8_t)gps_getLocalNow().tm_sec;
 }
 
 uint64_t gps_getEpoch() {
-    return (uint64_t)mktime( gps_getGMNow() );
+    struct tm gmnow = gps_getGMNow();
+    return (uint64_t)mktime( &gmnow );
 }
 
 char * gps_DecimalToDegreeMinutes(float_t decimal) {
-    char * retval = new char[20];
+    char * retval = new char[15];
 
     if (decimal > 0.0F) {
         sprintf(retval, "%d %5.2f", int(floor(decimal)), (decimal - floor(decimal))*60);
@@ -138,7 +139,7 @@ char * gps_DecimalToDegreeMinutes(float_t decimal) {
 }
 
 /* private functions, epoch style tm structures (after 01/01/1900) */
-tm * gps_getGMNow() {
+struct tm gps_getGMNow() {
     struct tm * gmnow;
     time_t rawtime;
 
@@ -152,10 +153,10 @@ tm * gps_getGMNow() {
     gmnow->tm_min =   gps.time.minute();
     gmnow->tm_sec =   gps.time.second();
 
-    return gmnow;
+    return *gmnow;
 }
 
-tm * gps_getLocalNow() {
+struct tm gps_getLocalNow() {
     time_t rawtime = (time_t)gps_getEpoch() + (time_t)(CONFIG.TZOffset * 3600);
-    return gmtime( &rawtime );
+    return *gmtime( &rawtime );
 }

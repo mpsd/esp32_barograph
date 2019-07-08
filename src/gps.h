@@ -20,7 +20,7 @@
     gps_getCourse(),    \
     gps_getSpeed(),     \
     gps_getEpoch(),     \
-    (gps_DateTimeIsValid() ? "valid" : "false") );   
+    (gps_DateTimeIsValid() ?  "valid" : "false" ) );   
 
 void gps_initialize();
 void gps_close();
@@ -50,7 +50,7 @@ uint64_t gps_getEpoch();
 char * gps_DecimalToDegreeMinutes(float_t decimal);
 
 /* private functions */
-tm * gps_getGMNow();
-tm * gps_getLocalNow();
+struct tm gps_getGMNow();
+struct tm gps_getLocalNow();
 
 #endif
