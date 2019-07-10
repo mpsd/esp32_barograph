@@ -34,9 +34,11 @@ void setup(void)
   WiFi.persistent(false);
   WiFi.mode(WIFI_AP);
   WiFi.softAP(CONFIG.APSSID, CONFIG.APPASS);
+  /*
   DEBUG_PRINT("IP address: ");
   DEBUG_PRINT(WiFi.softAPIP().toString().c_str());
-
+  */
+  
   DEBUG_PRINT("load config from file");
   config_get();
 
@@ -46,12 +48,14 @@ void setup(void)
   DEBUG_PRINT("initialize BME280");
   bme280_initialize();
 
+  /*
   DEBUG_PRINT("initialize DB");
   db_fetchData();
-    
+  
   DEBUG_PRINT("initialize ePaper");
   display_update();
-
+  */
+  
   DEBUG_PRINT("initialize GPS");
   gps_initialize();
 
@@ -107,14 +111,14 @@ void loop()
     }
   }
   
-  gps_delay(1000);
-
   if ( gps_DateTimeIsValid() && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) ) {
       DEBUG_PRINT("RTC more than 10s off - resync RTC to GPS");
       gps_delay(2000);                    // get most recent values
       ds3231_setDateTimeEpoch( gps_getEpoch() );
   }
   
+  gps_delay(1000);
+
   Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - Heap: Total %u / Free %u / Minimum %u / Max Block %u\n", ds3231_getDayOfMonth(), \
     ds3231_getMonth(),     \
     ds3231_getYear(),      \

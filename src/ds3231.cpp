@@ -39,8 +39,11 @@ void ds3231_initialize() {
       Rtc.SetIsRunning(true);
   }
 
+  // Rtc.SetDateTime( RtcDateTime(__DATE__, __TIME__) );
+
   RtcDateTime now = Rtc.GetDateTime();
   char datestring[40];
+
 
   snprintf_P(datestring, 
     UBOUND(datestring),
@@ -96,33 +99,37 @@ uint64_t ds3231_getEpoch() {
 }
 
 uint8_t ds3231_getHour() {
-    return ds3231_getLocalNow().Hour();
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
+    return now.Hour();
 }
 
 uint8_t ds3231_getMinute() {
-    return ds3231_getLocalNow().Minute();
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
+    return now.Minute();
 }
 
 uint8_t ds3231_getSecond() {
-    return ds3231_getLocalNow().Second();
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
+    return now.Second();
 }
 
 uint8_t ds3231_getDayOfMonth() {
-    return ds3231_getLocalNow().Day();
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
+    return now.Day();
 }
 
 uint8_t ds3231_getMonth() {
-    return ds3231_getLocalNow().Month();
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
+    return now.Month();
 }
 
 uint16_t ds3231_getYear() {
-    return ds3231_getLocalNow().Year();
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
+    return now.Year();
 }
 
 /* private function to apply timezoneoffset */
 RtcDateTime ds3231_getLocalNow() {
-    RtcDateTime now;
-    now.InitWithEpoch64Time( ds3231_getEpoch() );
-    now+=(uint32_t)(CONFIG.TZOffset * 3600); 
+    RtcDateTime now = RtcDateTime( ds3231_getEpoch() - 946684800U + (uint32_t)(CONFIG.TZOffset * 3600) );
     return now;
 }
