@@ -95,6 +95,7 @@ void loop()
     DEBUG_PRINT("Update display");
     lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
     db_fetchData();
+    gps_delay(1000);
     display_update();
 
     // maybe this helps with GPS location lost

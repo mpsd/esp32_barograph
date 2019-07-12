@@ -10,6 +10,10 @@ char index_html[INDEX_HTML_LEN];
 
 void create_index_html() {
 
+    for (int i=0; i < UBOUND(index_html); i++) {
+        index_html[i]='\0';
+    }
+
     int index = snprintf(index_html, INDEX_HTML_LEN, "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"refresh\" content=\"30\" /><title>esplogger</title><style> body { font: normal 12px Verdana, Arial, sans-serif; }</style></head><body>");
 
     index += snprintf(index_html+index, INDEX_HTML_LEN-index, "system uptime: %02lu days %02lu:%02lu.%02lu<br>", (millis()/1000/60/60/24), (millis()/1000/60/60) % 24, (millis()/1000/60) % 60, (millis()/1000) % 60);

@@ -130,6 +130,7 @@ void db_close() {
   DEBUG_PRINT("close DBfile");
 
   sqlite3_close(dbconn);
+  sqlite3_db_release_memory(dbconn);
 
   SD.end();
   _spiSD.end();
