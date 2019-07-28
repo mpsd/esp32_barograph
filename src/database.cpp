@@ -131,7 +131,7 @@ void db_close() {
 
   sqlite3_close(dbconn);
   sqlite3_db_release_memory(dbconn);
-
+ 
   SD.end();
   _spiSD.end();
 }
@@ -184,11 +184,13 @@ void db_fetchData() {
   while (sqlite3_step(res1) == SQLITE_ROW) {
     Serial.printf("id (x): %d, tst: %d, tstoffset: %d \n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1), sqlite3_column_int(res1, 5));
 
-    db_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
-    db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
-    db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 2);
-    db_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 3);
-    db_graph_values[ sqlite3_column_int(res1, 0) ].humidity = sqlite3_column_double(res1, 4);
+    if ( sqlite3_column_int(res1, 0) < UBOUND(db_graph_values) ) {
+      db_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
+      db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
+      db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 2);
+      db_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 3);
+      db_graph_values[ sqlite3_column_int(res1, 0) ].humidity = sqlite3_column_double(res1, 4);
+    }
   }
   sqlite3_finalize(res1);
 
@@ -232,19 +234,22 @@ void db_fetchData() {
 void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t spd, uint32_t sat, float_t hdop, float_t temp_raw, float_t temp, float_t temp_offset, float_t hum_raw, float_t hum, float_t press_raw, float_t press, float_t alt, uint64_t tst) {
   DEBUG_PRINT("****( begin )****");
   db_initialize();
-
-  int error = 0;
   
   sprintf(sqlbuffer, 
     "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
     lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst);
   DEBUG_PRINT(sqlbuffer);
 
-  error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
+  int error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
   if (error != SQLITE_OK ) {
     DEBUG_PRINT("SQL error");
     DEBUG_PRINT(sqlite3_errstr(error));
     DEBUG_PRINT(sqlite3_errmsg(dbconn));
+
+    if (error == SQLITE_NOMEM) {
+      db_close();
+      ESP.restart();
+    }
   }
 
   db_close();
