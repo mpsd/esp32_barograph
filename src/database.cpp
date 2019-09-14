@@ -240,7 +240,7 @@ void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t s
     lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst);
   DEBUG_PRINT(sqlbuffer);
 
-  int error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
+  int32_t error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
   if (error != SQLITE_OK ) {
     DEBUG_PRINT("SQL error");
     DEBUG_PRINT(sqlite3_errstr(error));
