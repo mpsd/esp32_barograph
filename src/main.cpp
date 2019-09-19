@@ -88,12 +88,14 @@ void loop()
     gps_delay(1000);
     display_update();
 
+/*
     // maybe this helps with GPS location lost
     if ( ! gps_LocationIsValid() ) {
       gps_close();
       delay(1000);
       gps_initialize();
     }
+*/
   }
   
   if ( gps_DateTimeIsValid() && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) && (gps_getEpoch() > 1546300800ULL) ) {
