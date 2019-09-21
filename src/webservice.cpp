@@ -9,6 +9,7 @@ AsyncWebServer webserver(80);
 char index_html[INDEX_HTML_LEN];
 
 void create_index_html() {
+    DEBUG_PRINT("****( begin )****");
 
     int index = snprintf(index_html, INDEX_HTML_LEN-1, "<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /><meta http-equiv=\"refresh\" content=\"30\" /><title>esplogger</title><style> body { font: normal 12px Verdana, Arial, sans-serif; }</style></head><body>");
 
@@ -20,7 +21,6 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<h3>Climate data</h3>");
 
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Current: %4.0fhPa / %2.0fC / %2.0f%% / dewpoint %2.1fC<br><br>", bme280_getPressure(), bme280_getTemperature(), bme280_getHumidity(), bme280_getDewPoint() ); 
-        
     for (int i=0; i < UBOUND(db_hourly_values); i++) {
         index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "%dh: %4.0fhPa %+4.1f / %2.0fC / %2.0f%% / dewpoint %2.1fC<br>", 
             i, db_hourly_values[i].pressure, db_hourly_values[i].chg_pressure, db_hourly_values[i].temperature, db_hourly_values[i].humidity, bme280_getDewPoint(db_hourly_values[i].humidity, db_hourly_values[i].temperature));
@@ -34,6 +34,7 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<text x=\"5\" y=\"75\" style=\"fill:red;\">1020 hPa<tspan x=\"5\" y=\"235\">1000 hPa</tspan><tspan x=\"5\" y=\"395\">980 hPa</tspan></text>");
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<text x=\"5\" y=\"95\" style=\"fill:blue;\">20 C<tspan x=\"5\" y=\"175\">15 C</tspan><tspan x=\"5\" y=\"255\">10 C</tspan><tspan x=\"5\" y=\"335\">5 C</tspan></text>");
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<g fill=\"none\" stroke=\"red\" stroke-width=\"2\"><polyline points=\"");
+
     for (int i=0; i < UBOUND(db_graph_values); i++) {
          if (db_graph_values[i].pressure > 0) index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "%d,%0.0f ", 2*i, 8*(1030 - db_graph_values[i].pressure));
     }
@@ -44,15 +45,14 @@ void create_index_html() {
     }
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "\" /></g></svg>");
 
-
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<h3>GPS data</h3>");
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f<br>Lat/Lon (Deg MM.MM): %s / %s<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Sat: %02u, HDOP: %04.2f<br>Lat/Lon: %08.6f / %08.6f<br>Lat/Lon (Deg MM.MM): %d %5.2f / %d %5.2f<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
             gps_getSatellites(),
             gps_getHDOP(),
             gps_getLat(),
             gps_getLon(),
-            gps_DecimalToDegreeMinutes(gps_getLat()),
-            gps_DecimalToDegreeMinutes(gps_getLon()),
+            int(floor(gps_getLat())), (gps_getLat() - floor(gps_getLat()))*60,
+            int(floor(gps_getLon())), (gps_getLon() - floor(gps_getLon()))*60,
             gps_getAltitude(),
             gps_getCourse(),
             gps_getSpeed() );
@@ -68,6 +68,7 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Content length: %d / %d</body></html>", index+35, INDEX_HTML_LEN);
     
     DEBUG_PRINT(index_html);
+    DEBUG_PRINT("****(complete)****");
 }
 
 void webserver_initialize() {

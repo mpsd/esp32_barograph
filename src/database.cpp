@@ -106,6 +106,7 @@ void db_initialize() {
   // github.com/espressif/arduino-esp32/issues/1219
   _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
 
+
   if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
     DEBUG_PRINT("Card Mount Failed");
     return;
@@ -117,7 +118,7 @@ void db_initialize() {
   DEBUG_PRINT("initialize SQLite3");
   sqlite3_initialize();
 
-  DEBUG_PRINT("open DBfile");
+  DEBUG_PRINT("open SQLite3 DBfile");
   if ( sqlite3_open(CONFIG.SQLiteFile, &dbconn) ) {
     DEBUG_PRINT("Unable to open database file - ");
     DEBUG_PRINT(CONFIG.SQLiteFile);
@@ -131,9 +132,11 @@ void db_close() {
 
   sqlite3_close(dbconn);
   sqlite3_db_release_memory(dbconn);
+  sqlite3_shutdown();
  
-  SD.end();
-  _spiSD.end();
+// SD.end(); // seems to leak the heap by 24b
+
+  _spiSD.end();  
 }
 
 void db_fetchData() {
@@ -233,13 +236,14 @@ void db_fetchData() {
 
 void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t spd, uint32_t sat, float_t hdop, float_t temp_raw, float_t temp, float_t temp_offset, float_t hum_raw, float_t hum, float_t press_raw, float_t press, float_t alt, uint64_t tst) {
   DEBUG_PRINT("****( begin )****");
-  db_initialize();
   
+  db_initialize();
+ 
   sprintf(sqlbuffer, 
     "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
     lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst);
   DEBUG_PRINT(sqlbuffer);
-
+  
   int32_t error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
   if (error != SQLITE_OK ) {
     DEBUG_PRINT("SQL error");
@@ -253,5 +257,6 @@ void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t s
   }
 
   db_close();
+
   DEBUG_PRINT("****( complete )****");
 }

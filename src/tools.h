@@ -2,7 +2,7 @@
 #define TOOLS_H
 
 #ifndef DEBUG_PRINT
-#define DEBUG_PRINT(p) Serial.printf( "%s() in file: %s(%d) - %s\n", __func__ , __FILE__, __LINE__, p );
+#define DEBUG_PRINT(p) Serial.printf( "%s() in file: %s(%d) - %s - free heap: %u\n", __func__ , __FILE__, __LINE__, p, ESP.getFreeHeap() );
 #endif
 
 #ifndef UBOUND
@@ -78,8 +78,7 @@ struct config_param {
 
   uint64_t  DataUpdateInterval = 60ULL;
   uint64_t  DisplayUpdateInterval = 300ULL;
-  uint64_t  RTCSyncInterval = 86400ULL;
-  
+
   uint32_t SDSpeed = 25000000U;
   int32_t GPSBaud = 9600;
 

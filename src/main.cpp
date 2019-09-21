@@ -76,8 +76,6 @@ void loop()
         bme280_getPressure(),
         bme280_getAltitude(),
         ds3231_getEpoch() );
-    Serial.printf("\nHeap: Total %u / Free %u / Minimum %u / Max Block %u\n\n",
-      ESP.getHeapSize(), ESP.getFreeHeap(), esp_get_minimum_free_heap_size(), ESP.getMaxAllocHeap() );    
     create_index_html(); 
   }
 
@@ -87,18 +85,9 @@ void loop()
     db_fetchData();
     gps_delay(1000);
     display_update();
-
-/*
-    // maybe this helps with GPS location lost
-    if ( ! gps_LocationIsValid() ) {
-      gps_close();
-      delay(1000);
-      gps_initialize();
-    }
-*/
   }
   
-  if ( gps_DateTimeIsValid() && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) && (gps_getEpoch() > 1546300800ULL) ) {
+  if ( gps_DateTimeIsValid() && (max(gps_getEpoch(), ds3231_getEpoch()) - min(gps_getEpoch(), ds3231_getEpoch()) > 10ULL) ) {
       DEBUG_PRINT("RTC more than 10s off - resync RTC to GPS");
       gps_delay(2000);                    // get most recent values
       ds3231_setDateTimeEpoch( gps_getEpoch() );
@@ -106,7 +95,7 @@ void loop()
   
   gps_delay(1000);
 
-  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - Heap: Total %u / Free %u / Minimum %u / Max Block %u\n", ds3231_getDayOfMonth(), 
+  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - free Heap: %u\n", ds3231_getDayOfMonth(), 
     ds3231_getMonth(),
     ds3231_getYear(),
     ds3231_getHour(),
@@ -114,5 +103,5 @@ void loop()
     ds3231_getSecond(),
     ds3231_getEpoch(),
     ( ds3231_IsValid() ? "valid" : "invalid" ),
-    ESP.getHeapSize(), ESP.getFreeHeap(), esp_get_minimum_free_heap_size(), ESP.getMaxAllocHeap() );  
+    ESP.getFreeHeap() );  
 }

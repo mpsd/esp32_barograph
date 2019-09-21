@@ -39,7 +39,7 @@ bool gps_LocationIsValid() {
 }
 
 bool gps_DateTimeIsValid() {
-    return ( gps.date.isValid() && gps.time.isValid() && (gps.date.age() < TIMEOUTMS) && (gps.time.age() < TIMEOUTMS) );
+    return ( gps.date.isValid() && gps.time.isValid() && (gps.date.age() < TIMEOUTMS) && (gps.time.age() < TIMEOUTMS) && gps.date.year() > 2010);
 }
 
 uint32_t gps_getSatellites() {
@@ -125,17 +125,6 @@ uint8_t gps_getSecond() {
 uint64_t gps_getEpoch() {
     struct tm gmnow = gps_getGMNow();
     return (uint64_t)mktime( &gmnow );
-}
-
-char * gps_DecimalToDegreeMinutes(float_t decimal) {
-    char * retval = new char[15];
-
-    if (decimal > 0.0F) {
-        sprintf(retval, "%d %5.2f", int(floor(decimal)), (decimal - floor(decimal))*60);
-    } else {
-        sprintf(retval, "%d %5.2f", int(ceil(decimal)), ((decimal - ceil(decimal))*-1*60));
-    }
-    return retval;
 }
 
 /* private functions, epoch style tm structures (after 01/01/1900) */
