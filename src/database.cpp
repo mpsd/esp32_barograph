@@ -170,33 +170,36 @@ void db_fetchData() {
   current_timestamp = ds3231_getEpoch();
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-  sprintf(sqlbuffer, 
-      "SELECT 200-((%llu - gmtimestamp)*200/(24*3600)) as id, gmtimestamp, temperature, pressure, humidity, (%llu - gmtimestamp) as timestampoffset FROM t_datalog WHERE gmtimestamp >= (%llu - 24*3600) ORDER BY gmtimestamp ASC LIMIT 2000;",
-      current_timestamp,
-      current_timestamp,
-      current_timestamp);
 
-  DEBUG_PRINT(sqlbuffer);
+  for (int i=0; i < 24; i++) { // define based on datalog interval 
 
-  error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
-  if ( error != SQLITE_OK ) {
-    DEBUG_PRINT( sqlite3_errstr(error) );
-    DEBUG_PRINT( sqlite3_errmsg(dbconn) );
-  }
+    sprintf(sqlbuffer, 
+        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, gmtimestamp, temperature, pressure, humidity FROM t_datalog WHERE gmtimestamp >= %llu ORDER BY gmtimestamp ASC LIMIT 100;",
+        current_timestamp,
+        current_timestamp - i*3600 );
 
-  while (sqlite3_step(res1) == SQLITE_ROW) {
-    Serial.printf("id (x): %d, tst: %d, tstoffset: %d \n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1), sqlite3_column_int(res1, 5));
+    DEBUG_PRINT(sqlbuffer);
 
-    if ( sqlite3_column_int(res1, 0) < UBOUND(db_graph_values) ) {
-      db_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
-      db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
-      db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 2);
-      db_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 3);
-      db_graph_values[ sqlite3_column_int(res1, 0) ].humidity = sqlite3_column_double(res1, 4);
+    error = sqlite3_prepare_v2(dbconn, sqlbuffer, -1, &res1, NULL);
+    if ( error != SQLITE_OK ) {
+      DEBUG_PRINT( sqlite3_errstr(error) );
+      DEBUG_PRINT( sqlite3_errmsg(dbconn) );
     }
-  }
-  sqlite3_finalize(res1);
 
+    while (sqlite3_step(res1) == SQLITE_ROW) {
+      Serial.printf("id (x): %d, tst: %d\n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1));
+
+      if ( sqlite3_column_int(res1, 0) < UBOUND(db_graph_values) ) {
+        db_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 2);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 3);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].humidity = sqlite3_column_double(res1, 4);
+      }
+    }
+    sqlite3_finalize(res1);
+  
+  }
 
   DEBUG_PRINT("Retrieve hourly data");
   sprintf(sqlbuffer,

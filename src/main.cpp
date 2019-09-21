@@ -95,7 +95,7 @@ void loop()
   
   gps_delay(1000);
 
-  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - free Heap: %u\n", ds3231_getDayOfMonth(), 
+  Serial.printf("%02u/%02u/%04u %02u:%02u:%02u - RTC Epoch: %llu (%s) - free heap: %u\n", ds3231_getDayOfMonth(), 
     ds3231_getMonth(),
     ds3231_getYear(),
     ds3231_getHour(),
