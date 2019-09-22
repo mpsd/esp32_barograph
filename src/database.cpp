@@ -101,6 +101,7 @@ void config_set() {
 }
 
 void db_initialize() {
+  DEBUG_PRINT("****( begin )****");
   DEBUG_PRINT("initialize SD Card");
   // SD on HSPI Port
   // github.com/espressif/arduino-esp32/issues/1219
@@ -124,19 +125,20 @@ void db_initialize() {
     DEBUG_PRINT(CONFIG.SQLiteFile);
     DEBUG_PRINT(sqlite3_errmsg(dbconn));
   }
-
+  DEBUG_PRINT("****( complete )****");
 }
 
 void db_close() {
-  DEBUG_PRINT("close DBfile");
-
+  DEBUG_PRINT("****( begin )****");
+  
   sqlite3_close(dbconn);
   sqlite3_db_release_memory(dbconn);
   sqlite3_shutdown();
  
 // SD.end(); // seems to leak the heap by 24b
 
-  _spiSD.end();  
+  _spiSD.end(); 
+  DEBUG_PRINT("****( complete )****");
 }
 
 void db_fetchData() {
@@ -170,13 +172,12 @@ void db_fetchData() {
   current_timestamp = ds3231_getEpoch();
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-
-  for (int i=0; i < 24; i++) { // define based on datalog interval 
+  for (int i=1; i <= 24; i++) { // define based on datalog interval - read maximum 150 rows from DB
 
     sprintf(sqlbuffer, 
-        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, gmtimestamp, temperature, pressure, humidity FROM t_datalog WHERE gmtimestamp >= %llu ORDER BY gmtimestamp ASC LIMIT 100;",
+        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, temperature, humidity, pressure, gmtimestamp FROM t_datalog WHERE gmtimestamp >= %llu ORDER BY gmtimestamp ASC LIMIT 150;",
         current_timestamp,
-        current_timestamp - i*3600 );
+        current_timestamp - (i * 3600) );
 
     DEBUG_PRINT(sqlbuffer);
 
@@ -187,18 +188,17 @@ void db_fetchData() {
     }
 
     while (sqlite3_step(res1) == SQLITE_ROW) {
-      Serial.printf("id (x): %d, tst: %d\n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 1));
+      Serial.printf("id (x): %d, tst: %d\n", sqlite3_column_int(res1, 0), sqlite3_column_int(res1, 4));
 
       if ( sqlite3_column_int(res1, 0) < UBOUND(db_graph_values) ) {
         db_graph_values[ sqlite3_column_int(res1, 0) ].x = sqlite3_column_int(res1, 0);
-        db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp = sqlite3_column_int(res1, 1);
-        db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 2);
-        db_graph_values[ sqlite3_column_int(res1, 0) ].pressure = sqlite3_column_double(res1, 3);
-        db_graph_values[ sqlite3_column_int(res1, 0) ].humidity = sqlite3_column_double(res1, 4);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].temperature = sqlite3_column_double(res1, 1);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].humidity    = sqlite3_column_double(res1, 2);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].pressure    = sqlite3_column_double(res1, 3);
+        db_graph_values[ sqlite3_column_int(res1, 0) ].timestamp   = sqlite3_column_int(res1, 4);
       }
     }
     sqlite3_finalize(res1);
-  
   }
 
   DEBUG_PRINT("Retrieve hourly data");
@@ -249,7 +249,6 @@ void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t s
   
   int32_t error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
   if (error != SQLITE_OK ) {
-    DEBUG_PRINT("SQL error");
     DEBUG_PRINT(sqlite3_errstr(error));
     DEBUG_PRINT(sqlite3_errmsg(dbconn));
 
@@ -260,6 +259,5 @@ void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t s
   }
 
   db_close();
-
   DEBUG_PRINT("****( complete )****");
 }

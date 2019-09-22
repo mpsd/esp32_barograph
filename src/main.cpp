@@ -11,7 +11,6 @@
 // used to switch WIFI and BT off
 
 /**************************(Definieren der genutzten Variabeln)****************************/
-
 config_param CONFIG;
 
 // Interval zum aktualisieren vom Display mehr als >= 4min * 60sec
@@ -46,6 +45,12 @@ void setup(void)
 
   DEBUG_PRINT("initialize GPS");
   gps_initialize();
+
+  if ( gps_DateTimeIsValid() ) {
+    DEBUG_PRINT("Set RTC to GPS datetime");
+    gps_delay(2000);   // get most recent values
+    ds3231_setDateTimeEpoch( gps_getEpoch() );
+  }
 
   DEBUG_PRINT("start webserver");
   webserver_initialize();
