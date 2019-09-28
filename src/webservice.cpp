@@ -46,7 +46,7 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "\" /></g></svg>");
 
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<h3>GPS data</h3>");
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Sat: %02u, HDOP: %04.2f<br>Lat/Lon (Decimal): %08.6f / %08.6f<br>Lat/Lon (Deg MM.MMM): %d %05.3f / %d %05.3f<br>Alt: %4.0f<br>Course: %3.0f<br>Speed: %2.0f<br>",
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Satellites: %02u, HDOP: %04.2f<br>Lat/Lon (Decimal): %08.6f / %08.6f<br>Lat/Lon (Deg MM.MMM): %d %05.3f / %d %05.3f<br>Altitude (m): %4.0f<br>Course: %3.0f<br>Speed (m/s): %2.0f<br>",
             gps_getSatellites(),
             gps_getHDOP(),
             gps_getLat(),

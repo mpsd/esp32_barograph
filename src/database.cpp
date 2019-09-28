@@ -172,12 +172,13 @@ void db_fetchData() {
   current_timestamp = ds3231_getEpoch();
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-  for (int i=1; i <= 24; i++) { // define based on datalog interval - read maximum 150 rows from DB
+  for (int i=1; i <= 4; i++) { // define based on datalog interval - read maximum 200 rows from DB
 
     sprintf(sqlbuffer, 
-        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, temperature, humidity, pressure, gmtimestamp FROM t_datalog WHERE gmtimestamp >= %llu ORDER BY gmtimestamp ASC LIMIT 150;",
+        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, temperature, humidity, pressure, gmtimestamp, (((%llu - gmtimestamp)*200%%(24*3600)) / 200) as timestampoffset FROM t_datalog WHERE timestampoffset < 120 AND gmtimestamp >= %llu ORDER BY gmtimestamp ASC LIMIT 200",
         current_timestamp,
-        current_timestamp - (i * 3600) );
+        current_timestamp,
+        current_timestamp - (i * 3600 * 6) );
 
     DEBUG_PRINT(sqlbuffer);
 
@@ -243,8 +244,8 @@ void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t s
   db_initialize();
  
   sprintf(sqlbuffer, 
-    "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu);",
-    lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst);
+    "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp, timezone_offset) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu, %d);",
+    lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst, CONFIG.TZOffset);
   DEBUG_PRINT(sqlbuffer);
   
   int32_t error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
