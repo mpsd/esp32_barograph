@@ -172,13 +172,13 @@ void db_fetchData() {
   current_timestamp = ds3231_getEpoch();
 
   DEBUG_PRINT("Retrieve data for graph (200px)");
-  for (int i=1; i <= 4; i++) { // define based on datalog interval - read maximum 200 rows from DB
+  for (int i=1; i <= 1; i++) { // define based on datalog interval - read maximum 200 rows from DB
 
     sprintf(sqlbuffer, 
-        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, temperature, humidity, pressure, gmtimestamp, (((%llu - gmtimestamp)*200%%(24*3600)) / 200) as timestampoffset FROM t_datalog WHERE timestampoffset < 120 AND gmtimestamp >= %llu ORDER BY gmtimestamp ASC LIMIT 200",
+        "SELECT ( 200-((%llu - gmtimestamp)*200/(24*3600)) ) as id, temperature, humidity, pressure, gmtimestamp, (((%llu - gmtimestamp)*200%%(24*3600)) / 200) as timestampoffset FROM t_datalog WHERE timestampoffset < 120 AND gmtimestamp >= %llu ORDER BY timestampoffset ASC LIMIT 200",
         current_timestamp,
         current_timestamp,
-        current_timestamp - (i * 3600 * 6) );
+        current_timestamp - (i * 3600 * 24) );
 
     DEBUG_PRINT(sqlbuffer);
 

@@ -25,8 +25,8 @@ void setup(void)
   DEBUG_PRINT("****( begin )****");
 
   /* comment out if program space is running low (takes ~40% of PROGRAM) */
-  DEBUG_PRINT("disable BT");
-  btStop();
+  // DEBUG_PRINT("disable BT");
+  // btStop();
 
   DEBUG_PRINT("Start WIFI AP");
   // github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/examples/WiFiBlueToothSwitch/WiFiBlueToothSwitch.ino
