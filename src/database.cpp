@@ -100,6 +100,69 @@ void config_set() {
   _spiSD.end();
 }
 
+void datastore_fetch() {
+  DEBUG_PRINT("****( begin )****");
+  DEBUG_PRINT("initialize SD Card");
+  // SD on HSPI Port
+  // github.com/espressif/arduino-esp32/issues/1219
+  _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
+
+
+  if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
+    DEBUG_PRINT("Card Mount Failed");
+    return;
+  }
+
+  File datastore = SD.open(CONFIG.DatastoreFile, FILE_READ);
+
+  datastore.read();
+
+  _spiSD.end();
+  DEBUG_PRINT("****( complete )****");
+}
+
+void datastore_push(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t spd, uint32_t sat, float_t hdop, float_t temp_raw, float_t temp, 
+  float_t temp_offset, float_t hum_raw, float_t hum, float_t press_raw, float_t press, float_t alt, uint64_t tst) {
+  
+  DEBUG_PRINT("****( begin )****");
+  DEBUG_PRINT("initialize SD Card");
+  // SD on HSPI Port
+  // github.com/espressif/arduino-esp32/issues/1219
+  _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
+
+
+  if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
+    DEBUG_PRINT("Card Mount Failed");
+    return;
+  }
+
+  File datastore = SD.open(CONFIG.DatastoreFile, FILE_APPEND);
+
+  struct datasetstruct dataset;
+  dataset.lat = lat;
+  dataset.lon = lon;
+  dataset.altitude_m = alt_m;
+  dataset.course = crs;
+  dataset.speed = spd;
+  dataset.sat = sat;
+  dataset.hdop = hdop;
+  dataset.temperature_raw = temp_raw;
+  dataset.temperature = temp;
+  dataset.temperature_offset = temp_offset;
+  dataset.humidity_raw = hum_raw;
+  dataset.humidity = hum;
+  dataset.pressure_raw = press_raw;
+  dataset.pressure = press;
+  dataset.altitude = alt;
+  dataset.timestamp = tst;
+
+  datastore.write((const uint8_t *)&dataset, sizeof(datastore));
+
+  _spiSD.end();
+  DEBUG_PRINT("****( complete )****");
+}
+
+
 void db_initialize() {
   DEBUG_PRINT("****( begin )****");
   DEBUG_PRINT("initialize SD Card");
