@@ -2,20 +2,16 @@
 #define DATABASE_H
 
 #include "tools.h"
-#include "ds3231.h"
 
-// #include <sqlite3.h>
 // builtin libraries
 #include <SPI.h>
 #include <FS.h>
 #include <SD.h>
 
-#define SQLBUFFSIZE 450
-
 void config_get(void);
 void config_set(void);
 
-void datastore_fetch(void);
+void datastore_fetch(uint64_t tstnow);
 void datastore_push(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t spd, uint32_t sat, float_t hdop, float_t temp_raw, float_t temp, 
   float_t temp_offset, float_t hum_raw, float_t hum, float_t press_raw, float_t press, float_t alt, uint64_t tst);
 

@@ -87,7 +87,7 @@ void loop()
   if (( ds3231_getMinute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
     DEBUG_PRINT("Update display");
     lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
-//  datastore_fetch();
+    datastore_fetch( ds3231_getEpoch() );
     gps_delay(1000);
     display_update();
   }

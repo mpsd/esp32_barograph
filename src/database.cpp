@@ -3,8 +3,6 @@
 
 SPIClass _spiSD(HSPI);
 
-char sqlbuffer[SQLBUFFSIZE];
-
 db_hourly_value db_hourly_values[HOURLY_VALUES];
 db_graph_value db_graph_values[GRAPH_VALUES];
 
@@ -97,8 +95,29 @@ void config_set() {
   _spiSD.end();
 }
 
-void datastore_fetch() {
+void datastore_fetch(uint64_t tstnow) {
   DEBUG_PRINT("****( begin )****");
+
+  DEBUG_PRINT("Reset variables");
+
+  for (int i=0; i < UBOUND(db_hourly_values); i++) {
+    db_hourly_values[i].temperature  = 0;
+    db_hourly_values[i].humidity     = 0;
+    db_hourly_values[i].pressure     = 0;
+    db_hourly_values[i].timestamp    = 0;
+    db_hourly_values[i].chg_pressure = 0;
+  }
+
+  for (int i=0; i < UBOUND(db_graph_values); i++){
+    db_graph_values[i].x = 0;
+    db_graph_values[i].temperature = 0;
+    db_graph_values[i].pressure = 0;
+    db_graph_values[i].humidity = 0;
+    db_graph_values[i].timestamp = 0;
+  }
+
+  uint64_t current_timestamp = tstnow;
+
   DEBUG_PRINT("initialize SD Card");
   // SD on HSPI Port
   // github.com/espressif/arduino-esp32/issues/1219
@@ -106,19 +125,64 @@ void datastore_fetch() {
 
 
   if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
-    DEBUG_PRINT("Card Mount Failed");
+    DEBUG_PRINT("SD Card Mount Failed");
     return;
   }
 
   File datastore = SD.open(CONFIG.DatastoreFile, FILE_READ);
 
   if (datastore.available()) {
-    datastore.read();
+    
+    DEBUG_PRINT("Read from datastore");
+
+    struct datasetstruct dataset;
+
+    if ( datastore.size() > (size_t)(sizeof(dataset) * 24ULL * 3600ULL / CONFIG.DataUpdateInterval) ) {
+      DEBUG_PRINT("Seek backwards position for last 24h in datastore");
+      datastore.seek( (uint32_t)datastore.size() - (uint32_t)(sizeof(dataset) * 24ULL * 3600ULL / CONFIG.DataUpdateInterval) );
+    } else {
+      DEBUG_PRINT("Less than 24h recorded in datastore");
+    }
+    
+    while ( datastore.position() < datastore.size() ) {
+      datastore.read((uint8_t *)&dataset, sizeof(dataset));
+      Serial.printf("RTC Epoch read: %llu \n", dataset.timestamp);
+
+      /*  Read data for 200px 24h history graph with maximum 120 seconds off the x axis point */
+      if ( (((current_timestamp - dataset.timestamp)*200%(24*3600) ) / 200) < 120 )  {
+        DEBUG_PRINT("Dataset qualified for 24h graph");
+        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].x = ( 200-((current_timestamp - dataset.timestamp)*200/(24*3600)) );
+        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].temperature = dataset.temperature;
+        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].pressure    = dataset.pressure;
+        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].humidity    = dataset.humidity;
+        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].timestamp   = dataset.timestamp;
+      }
+
+      /*  Read data for hourly calculations with maximum 300 seconds off the hour backwards */
+      if ( abs( (long)(current_timestamp - dataset.timestamp) )%3600 < 300) {
+        DEBUG_PRINT("Dataset qualified for hourly calculations");
+        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].temperature = dataset.temperature;
+        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].humidity    = dataset.humidity;
+        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].pressure    = dataset.pressure;
+        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].timestamp   = dataset.timestamp;
+
+      }
+
+    }
+    
+  }
+  
+  DEBUG_PRINT("Close datastore");
+  datastore.close();
+  _spiSD.end();
+
+  DEBUG_PRINT("Calculate pressure changes");
+  if (db_hourly_values[1].pressure > 0 ) { db_hourly_values[0].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[1].pressure; }
+  
+  for (int i=1; i < UBOUND(db_hourly_values); i++) {
+    if ( db_hourly_values[i].pressure > 0 ) { db_hourly_values[i].chg_pressure = db_hourly_values[0].pressure - db_hourly_values[i].pressure; }
   }
 
-  datastore.close();
-  
-  _spiSD.end();
   DEBUG_PRINT("****( complete )****");
 }
 
@@ -132,39 +196,36 @@ void datastore_push(float_t lat, float_t lon, float_t alt_m, float_t crs, float_
   _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
 
   if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
-    DEBUG_PRINT("Card Mount Failed");
+    DEBUG_PRINT("SD Card Mount Failed");
     return;
   }
 
   File datastore = SD.open(CONFIG.DatastoreFile, FILE_APPEND);
+
+  DEBUG_PRINT("Write to datastore");
+    
   struct datasetstruct dataset;
 
-  if ( datastore.available() ) {
+  dataset.lat = lat;
+  dataset.lon = lon;
+  dataset.altitude_m = alt_m;
+  dataset.course = crs;
+  dataset.speed = spd;
+  dataset.sat = sat;
+  dataset.hdop = hdop;
+  dataset.temperature_raw = temp_raw;
+  dataset.temperature = temp;
+  dataset.temperature_offset = temp_offset;
+  dataset.humidity_raw = hum_raw;
+  dataset.humidity = hum;
+  dataset.pressure_raw = press_raw;
+  dataset.pressure = press;
+  dataset.altitude = alt;
+  dataset.timestamp = tst;
 
-    DEBUG_PRINT("Write to datastore");
-
-    dataset.lat = lat;
-    dataset.lon = lon;
-    dataset.altitude_m = alt_m;
-    dataset.course = crs;
-    dataset.speed = spd;
-    dataset.sat = sat;
-    dataset.hdop = hdop;
-    dataset.temperature_raw = temp_raw;
-    dataset.temperature = temp;
-    dataset.temperature_offset = temp_offset;
-    dataset.humidity_raw = hum_raw;
-    dataset.humidity = hum;
-    dataset.pressure_raw = press_raw;
-    dataset.pressure = press;
-    dataset.altitude = alt;
-    dataset.timestamp = tst;
-
-    datastore.write((const uint8_t *)&dataset, sizeof(dataset));
-  }
+  datastore.write((const uint8_t *)&dataset, sizeof(dataset));
   datastore.close();
 
-//  SD.end(); // seems to memory leak
   _spiSD.end();
   DEBUG_PRINT("****( complete )****");
 }
