@@ -5,7 +5,7 @@ Platformio project to have a barograph with
 - Waveshare 1.54 ePaper
 - BME280 Sensor
 - uBlox GPS Neo 6
-- SD card board storing an sqlite db with the history data
-- DS3231 Realtime clock (synced once per day to GPS time)
+- SD card board storing an binary file datastore with the history data
+- DS3231 Realtime clock (synced to GPS time if off)
 
 work in progress...
