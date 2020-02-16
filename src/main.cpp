@@ -65,7 +65,7 @@ void loop()
   if ( ds3231_getEpoch() - CONFIG.DataUpdateInterval >= lastDataUpdate ) {
     DEBUG_PRINT("Writing sensor data to db");
     lastDataUpdate = ds3231_getEpoch();
-    db_pushData( gps_getLat(),
+    datastore_push( gps_getLat(),
         gps_getLon(),
         gps_getAltitude(),
         gps_getCourse(),
@@ -87,7 +87,7 @@ void loop()
   if (( ds3231_getMinute() %5 == 0) && (ds3231_getEpoch() - CONFIG.DisplayUpdateInterval >= lastDisplayUpdate )) {
     DEBUG_PRINT("Update display");
     lastDisplayUpdate = ds3231_getEpoch(); // due to long running db fetch reset timer at the beginning
-    db_fetchData();
+//  datastore_fetch();
     gps_delay(1000);
     display_update();
   }

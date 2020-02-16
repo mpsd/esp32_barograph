@@ -82,8 +82,7 @@ struct config_param {
   uint32_t SDSpeed = 25000000U;
   int32_t GPSBaud = 9600;
 
-  const char* SQLiteFile = "/sd/datalog.sqlite3";
-  const char* DatastoreFile = "/sd/datastore";
+  const char* DatastoreFile = "/datastore";
 };
 extern config_param CONFIG;
 

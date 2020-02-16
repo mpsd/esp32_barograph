@@ -2,7 +2,6 @@
 #include "database.h"
 
 SPIClass _spiSD(HSPI);
-sqlite3 *dbconn = NULL;
 
 char sqlbuffer[SQLBUFFSIZE];
 
@@ -22,7 +21,6 @@ void config_get() {
 
   DEBUG_PRINT("Read Altitude from SD Card");
   File confile = SD.open(CONFIG.AltitudeFile);
-  String buffer;
 
   if (!confile) {
     DEBUG_PRINT("Altitude config file not found");
@@ -73,7 +71,6 @@ void config_set() {
 
   DEBUG_PRINT("Write Altitude to SD Card");
   File confile = SD.open(CONFIG.AltitudeFile, FILE_WRITE);
-  String buffer;
 
   confile.printf("%0.1fF", CONFIG.Altitude);
   confile.println();
@@ -115,8 +112,12 @@ void datastore_fetch() {
 
   File datastore = SD.open(CONFIG.DatastoreFile, FILE_READ);
 
-  datastore.read();
+  if (datastore.available()) {
+    datastore.read();
+  }
 
+  datastore.close();
+  
   _spiSD.end();
   DEBUG_PRINT("****( complete )****");
 }
@@ -130,80 +131,46 @@ void datastore_push(float_t lat, float_t lon, float_t alt_m, float_t crs, float_
   // github.com/espressif/arduino-esp32/issues/1219
   _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
 
-
   if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
     DEBUG_PRINT("Card Mount Failed");
     return;
   }
 
   File datastore = SD.open(CONFIG.DatastoreFile, FILE_APPEND);
-
   struct datasetstruct dataset;
-  dataset.lat = lat;
-  dataset.lon = lon;
-  dataset.altitude_m = alt_m;
-  dataset.course = crs;
-  dataset.speed = spd;
-  dataset.sat = sat;
-  dataset.hdop = hdop;
-  dataset.temperature_raw = temp_raw;
-  dataset.temperature = temp;
-  dataset.temperature_offset = temp_offset;
-  dataset.humidity_raw = hum_raw;
-  dataset.humidity = hum;
-  dataset.pressure_raw = press_raw;
-  dataset.pressure = press;
-  dataset.altitude = alt;
-  dataset.timestamp = tst;
 
-  datastore.write((const uint8_t *)&dataset, sizeof(datastore));
+  if ( datastore.available() ) {
 
+    DEBUG_PRINT("Write to datastore");
+
+    dataset.lat = lat;
+    dataset.lon = lon;
+    dataset.altitude_m = alt_m;
+    dataset.course = crs;
+    dataset.speed = spd;
+    dataset.sat = sat;
+    dataset.hdop = hdop;
+    dataset.temperature_raw = temp_raw;
+    dataset.temperature = temp;
+    dataset.temperature_offset = temp_offset;
+    dataset.humidity_raw = hum_raw;
+    dataset.humidity = hum;
+    dataset.pressure_raw = press_raw;
+    dataset.pressure = press;
+    dataset.altitude = alt;
+    dataset.timestamp = tst;
+
+    datastore.write((const uint8_t *)&dataset, sizeof(dataset));
+  }
+  datastore.close();
+
+//  SD.end(); // seems to memory leak
   _spiSD.end();
   DEBUG_PRINT("****( complete )****");
 }
 
 
-void db_initialize() {
-  DEBUG_PRINT("****( begin )****");
-  DEBUG_PRINT("initialize SD Card");
-  // SD on HSPI Port
-  // github.com/espressif/arduino-esp32/issues/1219
-  _spiSD.begin(/* CLK */ _sd_clk, /* MISO */ _sd_miso, /* MOSI */ _sd_mosi, /* CS */ _sd_cs);
-
-
-  if ( !SD.begin( _sd_cs, _spiSD, CONFIG.SDSpeed) ) {
-    DEBUG_PRINT("Card Mount Failed");
-    return;
-  }
-
-  if (dbconn != NULL)
-    sqlite3_close(dbconn);
-
-  DEBUG_PRINT("initialize SQLite3");
-  sqlite3_initialize();
-
-  DEBUG_PRINT("open SQLite3 DBfile");
-  if ( sqlite3_open(CONFIG.SQLiteFile, &dbconn) ) {
-    DEBUG_PRINT("Unable to open database file - ");
-    DEBUG_PRINT(CONFIG.SQLiteFile);
-    DEBUG_PRINT(sqlite3_errmsg(dbconn));
-  }
-  DEBUG_PRINT("****( complete )****");
-}
-
-void db_close() {
-  DEBUG_PRINT("****( begin )****");
-  
-  sqlite3_close(dbconn);
-  sqlite3_db_release_memory(dbconn);
-  sqlite3_shutdown();
- 
-// SD.end(); // seems to leak the heap by 24b
-
-  _spiSD.end(); 
-  DEBUG_PRINT("****( complete )****");
-}
-
+/*
 void db_fetchData() {
 
   DEBUG_PRINT("****( begin )****");
@@ -300,28 +267,4 @@ void db_fetchData() {
   db_close();
   DEBUG_PRINT("****( complete )****");
 }
-
-void db_pushData(float_t lat, float_t lon, float_t alt_m, float_t crs, float_t spd, uint32_t sat, float_t hdop, float_t temp_raw, float_t temp, float_t temp_offset, float_t hum_raw, float_t hum, float_t press_raw, float_t press, float_t alt, uint64_t tst) {
-  DEBUG_PRINT("****( begin )****");
-  
-  db_initialize();
- 
-  sprintf(sqlbuffer, 
-    "INSERT INTO t_datalog(lat, lon, altitude_m, course_deg, speed_ms, satellites, hdop, temperature_raw, temperature, temperature_offset, humidity_raw, humidity, pressure_raw, pressure, altitude, gmtimestamp, timezone_offset) VALUES(%0.6f, %0.6f, %0.2f, %0.2f, %0.2f, %u, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %0.2f, %llu, %d);",
-    lat, lon, alt_m, crs, spd, sat, hdop, temp_raw, temp, temp_offset, hum_raw, hum, press_raw, press, alt, tst, CONFIG.TZOffset);
-  DEBUG_PRINT(sqlbuffer);
-  
-  int32_t error = sqlite3_exec(dbconn, sqlbuffer, 0, 0, NULL);
-  if (error != SQLITE_OK ) {
-    DEBUG_PRINT(sqlite3_errstr(error));
-    DEBUG_PRINT(sqlite3_errmsg(dbconn));
-
-    if (error == SQLITE_NOMEM) {
-      db_close();
-      ESP.restart();
-    }
-  }
-
-  db_close();
-  DEBUG_PRINT("****( complete )****");
-}
+*/
