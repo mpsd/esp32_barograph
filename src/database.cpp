@@ -151,23 +151,29 @@ void datastore_fetch(uint64_t tstnow) {
       /*  Read data for 200px 24h history graph with maximum 120 seconds off the x axis point */
       if ( (((current_timestamp - dataset.timestamp)*200%(24*3600) ) / 200) < 120 )  {
         DEBUG_PRINT("Dataset qualified for 24h graph");
-        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].x = ( 200-((current_timestamp - dataset.timestamp)*200/(24*3600)) );
-        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].temperature = dataset.temperature;
-        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].pressure    = dataset.pressure;
-        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].humidity    = dataset.humidity;
-        db_graph_values[ (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600))) ].timestamp   = dataset.timestamp;
+        int index = (int)(200-((current_timestamp - dataset.timestamp)*200/(24*3600)));
+
+        if ((index >= 0 ) && (index < UBOUND(db_graph_values))) {
+          db_graph_values[ index ].x = index;
+          db_graph_values[ index ].temperature = dataset.temperature;
+          db_graph_values[ index ].pressure    = dataset.pressure;
+          db_graph_values[ index ].humidity    = dataset.humidity;
+          db_graph_values[ index ].timestamp   = dataset.timestamp;  
+        }
       }
 
       /*  Read data for hourly calculations with maximum 300 seconds off the hour backwards */
       if ( abs( (long)(current_timestamp - dataset.timestamp) )%3600 < 300) {
         DEBUG_PRINT("Dataset qualified for hourly calculations");
-        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].temperature = dataset.temperature;
-        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].humidity    = dataset.humidity;
-        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].pressure    = dataset.pressure;
-        db_hourly_values[ (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600) ].timestamp   = dataset.timestamp;
+        int index = (int)(abs( (long)(current_timestamp - dataset.timestamp) ) / 3600);
 
+        if ((index >= 0) && (index < UBOUND(db_hourly_values))) {
+          db_hourly_values[ index ].temperature = dataset.temperature;
+          db_hourly_values[ index ].humidity    = dataset.humidity;
+          db_hourly_values[ index ].pressure    = dataset.pressure;
+          db_hourly_values[ index ].timestamp   = dataset.timestamp;
+        }
       }
-
     }
     
   }
