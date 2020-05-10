@@ -62,8 +62,9 @@ void create_index_html() {
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%0.0f\"><br>", FORM_ALTITUDE, CONFIG.AltitudeFile, FORM_ALTITUDE, FORM_ALTITUDE, CONFIG.Altitude);
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" value=\"%d\"><br>", FORM_TZOFFSET, CONFIG.TZOffsetFile, FORM_TZOFFSET, FORM_TZOFFSET, CONFIG.TZOffset);
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<label for=\"%s\">%s:</label><input id=\"%s\" name=\"%s\" type=\"number\" step=\"0.1\" value=\"%0.1f\"><br>", FORM_TEMPOFFSET, CONFIG.TemperatureOffsetFile, FORM_TEMPOFFSET, FORM_TEMPOFFSET, CONFIG.TemperatureOffset);
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<button type=\"submit\">Save</button>");
-    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "</form><br><form action=\"/esprestart\" method=\"post\"><button type=\"submit\">Restart</button></form><br>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<button type=\"submit\">Save</button></form><br>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<br><form action=\"/esprestart\" method=\"post\"><button type=\"submit\">Restart</button></form><br>");
+    index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "<br><form action=\"/rtcsync\" method=\"post\"><button type=\"submit\">RTC sync</button></form><br>");
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Heap: total %u / free %u / min %u / max blocksize %u<br>", ESP.getHeapSize(), ESP.getFreeHeap(), esp_get_minimum_free_heap_size(), ESP.getMaxAllocHeap() );
     index += snprintf(index_html+index, INDEX_HTML_LEN-index-1, "Content length: %d / %d</body></html>", index+35, INDEX_HTML_LEN);
     
@@ -120,6 +121,7 @@ void webserver_initialize() {
 
     webserver.on("/esprestart", HTTP_ANY, [](AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->addHeader("Server","ESP Async Web Server");
         response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
         response->printf("<title>Webpage at %s</title>", request->url().c_str());
         response->print("<style> body {font: normal 10px Verdana, Arial, sans-serif;} </style>");
@@ -129,6 +131,22 @@ void webserver_initialize() {
 
         ESP.restart();
     });
+
+    webserver.on("/rtcsync", HTTP_ANY, [](AsyncWebServerRequest *request) {
+        AsyncResponseStream *response = request->beginResponseStream("text/html");
+        response->addHeader("Server","ESP Async Web Server");
+        response->print("<!DOCTYPE html><html><head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
+        response->printf("<title>Webpage at %s</title>", request->url().c_str());
+        response->print("<style> body {font: normal 10px Verdana, Arial, sans-serif;} </style>");
+        response->print("</head><body>Syncing RTC to GPS time<br>");
+        response->print("<br><a href=\"/\">back</a></body></html>");
+ 
+        request->send(response);
+
+        gps_delay(2000);                    // get most recent values
+        ds3231_setDateTimeEpoch( gps_getEpoch() );
+    });
+
 
     webserver.on("/debug", HTTP_ANY, [](AsyncWebServerRequest *request) {
         AsyncResponseStream *response = request->beginResponseStream("text/html");
