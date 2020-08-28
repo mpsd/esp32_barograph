@@ -1,4 +1,4 @@
-ESP32 Barograph
+# ESP32 Barograph
 
 Platformio project to have a barograph with
 - ESP32 Main unit
